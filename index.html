@@ -97,7 +97,6 @@
         <h2>Добро пожаловать!</h2>
         <button onclick="toggleBox('registration')">Регистрация</button>
         <button onclick="toggleBox('login')">Авторизация</button>
-        <button onclick="toggleBox('adminLogin')">Админ-панель</button>
     </div>
 
     <div class="container registration-box" style="display: none;">
@@ -134,12 +133,14 @@
         <button onclick="muteUser()">Мут</button>
         <button onclick="banUser()">Бан</button>
         <button onclick="renameUser()">Переименовать</button>
+        <button onclick="deleteAllUsers()">Удалить всех пользователей</button>
         <div id="adminData"></div>
         <button onclick="toggleBox('auth')">Выйти</button>
     </div>
 
     <div class="container chat-box" id="chatBox">
         <h2>Чат</h2>
+        <button onclick="toggleBox('adminLogin')">Админ-панель</button>
         <button onclick="logout()">Выйти</button>
         <div class="messages" id="messages"></div>
         <div class="input-box">
@@ -197,6 +198,115 @@
             const oldName = prompt('Введите текущий логин пользователя:');
             const newName = prompt('Введите новый логин пользователя:');
             alert(`Пользователь ${oldName} теперь ${newName}.`);
+        }
+
+        function deleteAllUsers() {
+            if (confirm('Вы уверены, что хотите удалить всех пользователей?')) {
+                alert('Все пользователи удалены.');
+            }
+        }
+
+        document.getElementById('registerButton').addEventListener('click', async () => {
+            const name = document.getElementById('regName').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+
+            if (!name || !username || !password) {
+                alert('Все поля обязательны для заполнения!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, username, password })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Регистрация успешна!');
+                    toggleBox('login');
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('Ошибка регистрации. Попробуйте позже.');
+            }
+        });
+
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!username || !password) {
+                alert('Введите логин и пароль!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    currentUser = result.name;
+                    alert(`Добро пожаловать, ${result.name}!`);
+                    toggleBox('chatBox');
+                    connectToChat();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('Ошибка авторизации. Попробуйте позже.');
+            }
+        });
+
+        function connectToChat() {
+            socket = new WebSocket('wss://tan-uttermost-grease.glitch.me');
+
+            socket.onmessage = (event) => {
+                const messages = document.getElementById('messages');
+                const message = document.createElement('div');
+                message.textContent = event.data;
+                messages.appendChild(message);
+                messages.scrollTop = messages.scrollHeight;
+            };
+
+            socket.onopen = () => {
+                socket.send(`${currentUser} подключился к чату.`);
+            };
+
+            socket.onclose = () => {
+                alert('Соединение с сервером потеряно.');
+            };
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (message && socket) {
+                socket.send(`${currentUser}: ${message}`);
+                input.value = '';
+            }
+        }
+
+        document.getElementById('chatInput').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function logout() {
+            if (socket) {
+                socket.close();
+            }
+            currentUser = null;
+            toggleBox('auth');
         }
     </script>
 </body>
