@@ -16,174 +16,168 @@
             align-items: center;
             height: 100vh;
         }
-        .main-container {
-            display: flex;
-            width: 90%;
-            max-width: 1200px;
-            height: 90%;
+        .auth-container {
+            width: 400px;
+            max-width: 100%;
             background: #1e1e1e;
             border-radius: 10px;
-            overflow: hidden;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-        .chat-list {
-            width: 30%;
-            background: #2a2a2a;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-        .chat-list-header {
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            background: #3a3a3a;
-        }
-        .chat-item {
-            padding: 15px;
-            border-bottom: 1px solid #444;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .chat-item:hover {
-            background: #444;
-        }
-        .chat-item.active {
-            background: #0056b3;
-            color: #ffffff;
-        }
-        .chat-window {
-            width: 70%;
-            display: flex;
-            flex-direction: column;
-        }
-        .chat-header {
-            background: #3a3a3a;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chat-users {
-            font-size: 14px;
-            color: #ccc;
-        }
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
             padding: 20px;
-            background-color: #1e1e1e;
+            text-align: center;
         }
-        .message {
-            padding: 10px;
-            border-radius: 8px;
-            background: #0056b3;
-            color: #fff;
-            max-width: 75%;
-            margin-bottom: 10px;
-            word-wrap: break-word;
-            display: flex;
-            align-items: center;
-        }
-        .message img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        .message.me {
-            background: #6c757d;
-            margin-left: auto;
-        }
-        .chat-input {
-            display: flex;
-            padding: 10px;
-            background: #3a3a3a;
-            border-top: 1px solid #444;
-            align-items: center;
-        }
-        .chat-input input {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            margin-right: 10px;
-            font-size: 16px;
-            background: #2a2a2a;
+        .auth-container h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
             color: #e0e0e0;
         }
-        .chat-input input:focus {
+        .auth-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background: #2a2a2a;
+            color: #e0e0e0;
+            font-size: 16px;
+        }
+        .auth-container input:focus {
             outline: none;
         }
-        .chat-input button {
+        .auth-container button {
+            width: 100%;
             padding: 12px;
             background: #0056b3;
-            color: white;
+            color: #fff;
             font-size: 16px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        .chat-input button:hover {
+        .auth-container button:hover {
             background: #003f7f;
         }
-        .emoji-picker {
-            position: absolute;
-            bottom: 60px;
-            right: 10px;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            padding: 10px;
-            display: none;
-            flex-wrap: wrap;
-            border-radius: 5px;
-        }
-        .emoji-picker span {
-            font-size: 24px;
-            margin: 5px;
+        .auth-container .toggle {
+            margin-top: 15px;
+            color: #aaa;
+            font-size: 14px;
             cursor: pointer;
-            transition: transform 0.2s;
+            text-decoration: underline;
         }
-        .emoji-picker span:hover {
-            transform: scale(1.2);
+        .settings-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+        .settings-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: none;
+            background: #2a2a2a;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        .settings-container button {
+            width: 100%;
+            padding: 10px;
+            background: #0056b3;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .settings-container button:hover {
+            background: #003f7f;
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="chat-list" id="chatList">
-            <div class="chat-list-header">Доступные чаты</div>
-            <div class="chat-item" onclick="switchChat('general')" id="general">Общий чат</div>
-            <div class="chat-item" onclick="switchChat('sports')" id="sports">Спорт</div>
-            <div class="chat-item" onclick="switchChat('tech')" id="tech">Технологии</div>
+    <div id="auth-container" class="auth-container">
+        <h1>Регистрация</h1>
+        <input id="name" type="text" placeholder="Имя">
+        <input id="username" type="text" placeholder="Логин">
+        <input id="password" type="password" placeholder="Пароль">
+        <button onclick="register()">Зарегистрироваться</button>
+        <div class="toggle" onclick="toggleAuthMode()">Уже есть аккаунт? Войти</div>
+    </div>
+
+    <div id="chat-container" style="display: none;">
+        <div class="main-container">
+            <div class="chat-list" id="chatList">
+                <div class="chat-list-header">Доступные чаты</div>
+                <div class="chat-item" onclick="switchChat('general')" id="general">Общий чат</div>
+                <div class="chat-item" onclick="switchChat('sports')" id="sports">Спорт</div>
+                <div class="chat-item" onclick="switchChat('tech')" id="tech">Технологии</div>
+            </div>
+            <div class="chat-window">
+                <div class="chat-header">
+                    <span id="chatHeader">Общий чат</span>
+                    <span id="chatUsers" class="chat-users">Подключено: 0</span>
+                    <button onclick="toggleSettings()">⚙</button>
+                </div>
+                <div id="messages" class="chat-messages"></div>
+                <div class="chat-input">
+                    <input id="messageInput" type="text" placeholder="Введите сообщение...">
+                    <button onclick="sendMessage()">Отправить</button>
+                    <button onclick="toggleEmojiPicker()">😊</button>
+                </div>
+                <div class="emoji-picker" id="emojiPicker">
+                    <span onclick="addEmoji('😀')">😀</span>
+                    <span onclick="addEmoji('😂')">😂</span>
+                    <span onclick="addEmoji('😍')">😍</span>
+                    <span onclick="addEmoji('👍')">👍</span>
+                    <span onclick="addEmoji('🎉')">🎉</span>
+                </div>
+            </div>
         </div>
-        <div class="chat-window">
-            <div class="chat-header">
-                <span id="chatHeader">Общий чат</span>
-                <span id="chatUsers" class="chat-users">Подключено: 0</span>
-            </div>
-            <div id="messages" class="chat-messages"></div>
-            <div class="chat-input">
-                <input id="messageInput" type="text" placeholder="Введите сообщение...">
-                <button onclick="sendMessage()">Отправить</button>
-                <button onclick="toggleEmojiPicker()">😊</button>
-            </div>
-            <div class="emoji-picker" id="emojiPicker">
-                <span onclick="addEmoji('😀')">😀</span>
-                <span onclick="addEmoji('😂')">😂</span>
-                <span onclick="addEmoji('😍')">😍</span>
-                <span onclick="addEmoji('👍')">👍</span>
-                <span onclick="addEmoji('🎉')">🎉</span>
-            </div>
+        <div class="settings-container" id="settings">
+            <h3>Настройки группы</h3>
+            <input id="groupName" type="text" placeholder="Название группы">
+            <button onclick="saveSettings()">Сохранить</button>
+            <button onclick="toggleSettings()">Закрыть</button>
         </div>
     </div>
 
     <script>
+        let isLogin = false;
         let currentChat = 'general';
         let usersInChat = 0;
+
+        function toggleAuthMode() {
+            isLogin = !isLogin;
+            document.querySelector('#auth-container h1').textContent = isLogin ? 'Авторизация' : 'Регистрация';
+            document.querySelector('#auth-container button').textContent = isLogin ? 'Войти' : 'Зарегистрироваться';
+            document.querySelector('.toggle').textContent = isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти';
+        }
+
+        function register() {
+            const name = document.getElementById('name').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!isLogin && (!name || !username || !password)) {
+                alert('Пожалуйста, заполните все поля!');
+                return;
+            }
+
+            if (isLogin && (!username || !password)) {
+                alert('Пожалуйста, заполните все поля!');
+                return;
+            }
+
+            alert(isLogin ? 'Вход выполнен!' : 'Регистрация успешна!');
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('chat-container').style.display = 'block';
+        }
 
         function switchChat(chatName) {
             document.querySelectorAll('.chat-item').forEach(item => {
@@ -201,8 +195,6 @@
             messagesContainer.innerHTML = `<div>Загрузка сообщений для чата: ${capitalizeFirstLetter(chatName)}...</div>`;
             setTimeout(() => {
                 messagesContainer.innerHTML = `<div>Добро пожаловать в ${capitalizeFirstLetter(chatName)} чат!</div>`;
-                usersInChat = Math.floor(Math.random() * 10) + 1; // Simulated user count
-                document.getElementById('chatUsers').textContent = `Подключено: ${usersInChat}`;
             }, 1000);
         }
 
@@ -229,6 +221,19 @@
             const messageInput = document.getElementById('messageInput');
             messageInput.value += emoji;
             document.getElementById('emojiPicker').style.display = 'none';
+        }
+
+        function toggleSettings() {
+            const settings = document.getElementById('settings');
+            settings.style.display = settings.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function saveSettings() {
+            const groupName = document.getElementById('groupName').value.trim();
+            if (groupName) {
+                document.getElementById('chatHeader').textContent = groupName;
+                alert('Название группы обновлено!');
+            }
         }
 
         function capitalizeFirstLetter(string) {
