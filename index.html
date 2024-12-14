@@ -26,51 +26,55 @@
             text-align: center;
             padding: 20px;
         }
-        .shop, .clicker {
-            display: none;
-        }
-        h2 {
-            margin-bottom: 20px;
-            font-size: 24px;
-            color: #007bff;
-        }
-        .points {
-            font-size: 18px;
-            margin: 20px 0;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 10px 0;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .shop-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0;
-        }
-        .shop-item span {
-            font-size: 16px;
-        }
-        .admin-panel {
+        .chat-box {
             display: none;
             flex-direction: column;
             align-items: center;
             margin-top: 20px;
         }
-        .admin-panel input {
-            margin: 5px;
+        .messages {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .input-box {
+            display: flex;
+            align-items: center;
+        }
+        .input-box input {
+            flex: 1;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            margin-right: 10px;
+        }
+        .input-box button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .menu {
+            margin-top: 20px;
+        }
+        .menu button {
+            margin: 5px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .menu button:hover {
+            background: #0056b3;
         }
     </style>
 </head>
@@ -98,34 +102,33 @@
         <button onclick="toggleBox('auth')">Назад</button>
     </div>
 
-    <div class="container clicker" id="clickerBox">
+    <div class="container menu" id="menuBox" style="display: none;">
         <h2>Кликер-чат</h2>
-        <div class="points">Очки: <span id="points">0</span></div>
-        <button onclick="addPoints()">Клик!</button>
-        <button onclick="toggleShop()">Магазин</button>
-        <button onclick="openAdminPanel()">Админ-панель</button>
+        <button onclick="showClicker()">Кликер</button>
+        <button onclick="showChat()">Чат</button>
     </div>
 
-    <div class="container shop" id="shopBox">
-        <h2>Магазин</h2>
-        <div class="shop-item">
-            <span>Отправка сообщений с помощью Enter</span>
-            <button onclick="buyFeature('enterToSend', 10)">Купить (10 очков)</button>
+    <div class="container chat-box" id="chatBox">
+        <h2>Чат</h2>
+        <div class="messages" id="messages"></div>
+        <div class="input-box">
+            <input type="text" id="chatInput" placeholder="Введите сообщение...">
+            <button onclick="sendMessage()">Отправить</button>
         </div>
-        <button onclick="toggleClicker()">Назад</button>
+        <button onclick="showMenu()">Назад</button>
     </div>
 
-    <div class="admin-panel" id="adminPanel">
-        <h2>Админ-панель</h2>
-        <input type="text" id="searchUser" placeholder="Введите имя для поиска">
-        <button onclick="searchUser()">Найти</button>
-        <div id="adminActions" style="margin-top: 20px;"></div>
-        <button onclick="closeAdminPanel()">Закрыть</button>
+    <div class="container clicker-box" id="clickerBox" style="display: none;">
+        <h2>Кликер</h2>
+        <div>Очки: <span id="points">0</span></div>
+        <button onclick="addPoints()">Клик!</button>
+        <button onclick="showMenu()">Назад</button>
     </div>
 
     <script>
-        const usersDatabase = [];
         let currentUser = null;
+        let socket = null;
+        let points = 0;
 
         function toggleBox(box) {
             document.querySelector('.auth-box').style.display = box === 'auth' ? 'block' : 'none';
@@ -133,25 +136,20 @@
             document.querySelector('.login-box').style.display = box === 'login' ? 'block' : 'none';
         }
 
-        function toggleClicker() {
+        function showMenu() {
+            document.getElementById('menuBox').style.display = 'block';
+            document.getElementById('chatBox').style.display = 'none';
+            document.getElementById('clickerBox').style.display = 'none';
+        }
+
+        function showChat() {
+            document.getElementById('menuBox').style.display = 'none';
+            document.getElementById('chatBox').style.display = 'block';
+        }
+
+        function showClicker() {
+            document.getElementById('menuBox').style.display = 'none';
             document.getElementById('clickerBox').style.display = 'block';
-            document.getElementById('shopBox').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'none';
-        }
-
-        function toggleShop() {
-            document.getElementById('clickerBox').style.display = 'none';
-            document.getElementById('shopBox').style.display = 'block';
-        }
-
-        function openAdminPanel() {
-            document.getElementById('clickerBox').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'flex';
-        }
-
-        function closeAdminPanel() {
-            document.getElementById('adminPanel').style.display = 'none';
-            toggleClicker();
         }
 
         document.getElementById('registerButton').addEventListener('click', () => {
@@ -164,13 +162,6 @@
                 return;
             }
 
-            const userExists = usersDatabase.some(user => user.username === username);
-            if (userExists) {
-                alert('Этот логин уже используется. Пожалуйста, выберите другой.');
-                return;
-            }
-
-            usersDatabase.push({ name, username, password, points: 0, features: {} });
             alert('Регистрация успешна!');
             toggleBox('login');
         });
@@ -179,57 +170,49 @@
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
 
-            const user = usersDatabase.find(user => user.username === username && user.password === password);
-
-            if (user) {
-                alert(`Добро пожаловать, ${user.name}!`);
-                currentUser = user;
-                toggleClicker();
+            if (username && password) {
+                alert(`Добро пожаловать, ${username}!`);
+                currentUser = username;
+                document.getElementById('menuBox').style.display = 'block';
+                document.querySelector('.login-box').style.display = 'none';
             } else {
                 alert('Неверный логин или пароль!');
             }
         });
 
+        function connectToChat() {
+            socket = new WebSocket('wss://tan-uttermost-grease.glitch.me');
+
+            socket.onmessage = (event) => {
+                const messages = document.getElementById('messages');
+                const message = document.createElement('div');
+                message.textContent = event.data;
+                messages.appendChild(message);
+                messages.scrollTop = messages.scrollHeight;
+            };
+
+            socket.onopen = () => {
+                socket.send(`${currentUser} подключился к чату.`);
+            };
+
+            socket.onclose = () => {
+                alert('Соединение с сервером потеряно.');
+            };
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (message && socket) {
+                socket.send(`${currentUser}: ${message}`);
+                input.value = '';
+            }
+        }
+
         function addPoints() {
-            if (currentUser) {
-                currentUser.points += 1;
-                document.getElementById('points').textContent = currentUser.points;
-            }
-        }
-
-        function buyFeature(feature, cost) {
-            if (currentUser.points >= cost) {
-                currentUser.points -= cost;
-                currentUser.features[feature] = true;
-                document.getElementById('points').textContent = currentUser.points;
-                alert('Функция успешно куплена!');
-            } else {
-                alert('Недостаточно очков!');
-            }
-        }
-
-        function searchUser() {
-            const searchQuery = document.getElementById('searchUser').value.trim();
-            const user = usersDatabase.find(u => u.name.toLowerCase() === searchQuery.toLowerCase());
-
-            if (user) {
-                const adminActions = document.getElementById('adminActions');
-                adminActions.innerHTML = `
-                    <p>Пользователь: ${user.name}</p>
-                    <button onclick="muteUser('${user.username}')">Мут</button>
-                    <button onclick="banUser('${user.username}')">Бан</button>
-                `;
-            } else {
-                alert('Пользователь не найден');
-            }
-        }
-
-        function muteUser(username) {
-            alert(`Мут для пользователя ${username} добавлен (функция пока не реализована).`);
-        }
-
-        function banUser(username) {
-            alert(`Бан для пользователя ${username} добавлен (функция пока не реализована).`);
+            points++;
+            document.getElementById('points').textContent = points;
         }
     </script>
 </body>
