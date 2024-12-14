@@ -21,6 +21,21 @@
             display: flex;
             gap: 20px;
         }
+        .admin-panel {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .admin-panel h3 {
+            margin-bottom: 10px;
+            color: #007bff;
+        }
         .chat-box {
             flex: 2;
             background: white;
@@ -91,28 +106,17 @@
         .input-box button:hover {
             background: #0056b3;
         }
-        .admin-panel {
+        .online-list {
             flex: 1;
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
             padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            overflow-y: auto;
         }
-        .admin-panel h3 {
+        .online-list h3 {
             margin-bottom: 10px;
             color: #007bff;
-        }
-        .online-list {
-            background: #f1f1f1;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-            height: 200px;
-            overflow-y: auto;
         }
         .online-user {
             padding: 5px;
@@ -125,43 +129,12 @@
         .online-user:hover {
             background: #ccc;
         }
-        .profile-settings {
-            flex: 1;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .profile-settings h3 {
-            margin-bottom: 10px;
-            color: #007bff;
-        }
-        .user-card {
-            padding: 10px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            margin-bottom: 10px;
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .user-card h4 {
-            margin-bottom: 10px;
-            color: #007bff;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="admin-panel">
             <h3>Админ-панель</h3>
-            <div class="online-list" id="onlineList">
-                <h4>Пользователи онлайн:</h4>
-            </div>
             <button onclick="toggleAdminPanel()">Назад</button>
             <button onclick="clearUsers()">Удалить всех пользователей</button>
         </div>
@@ -175,23 +148,8 @@
             </div>
         </div>
 
-        <div class="profile-settings" id="profileSettings">
-            <h3>Настройки профиля</h3>
-            <p>Имя: <span id="profileName"></span></p>
-            <p>Логин: <span id="profileUsername"></span></p>
-            <input type="text" id="newProfileName" placeholder="Новое имя">
-            <button onclick="updateProfileName()">Изменить имя</button>
-            <button onclick="toggleProfileSettings()">Закрыть</button>
-        </div>
-
-        <div class="user-card" id="userCard">
-            <h4>Карточка пользователя</h4>
-            <p>Имя: <span id="cardName"></span></p>
-            <p>Логин: <span id="cardUsername"></span></p>
-            <button onclick="kickUser()">Кикнуть</button>
-            <button onclick="muteUser()">Мут</button>
-            <button onclick="banUser()">Забанить</button>
-            <button onclick="closeUserCard()">Закрыть</button>
+        <div class="online-list" id="onlineList">
+            <h3>Пользователи онлайн</h3>
         </div>
     </div>
 
@@ -206,20 +164,16 @@
                 const userDiv = document.createElement('div');
                 userDiv.className = 'online-user';
                 userDiv.textContent = user;
-                userDiv.onclick = () => showUserCard(user);
+                userDiv.onclick = () => alert(`Карточка пользователя: ${user}`);
                 list.appendChild(userDiv);
             });
         }
 
         function toggleAdminPanel() {
-            document.querySelector('.admin-panel').style.display =
-                document.querySelector('.admin-panel').style.display === 'none' ? 'block' : 'none';
-        }
-
-        function toggleProfileSettings() {
-            const profileSettings = document.getElementById('profileSettings');
-            profileSettings.style.display =
-                profileSettings.style.display === 'none' ? 'block' : 'none';
+            const adminPanel = document.querySelector('.admin-panel');
+            const chatBox = document.querySelector('.chat-box');
+            adminPanel.style.display = adminPanel.style.display === 'none' ? 'flex' : 'none';
+            chatBox.style.display = chatBox.style.display === 'none' ? 'flex' : 'none';
         }
 
         function sendMessage() {
@@ -241,38 +195,6 @@
             if (confirm("Вы уверены, что хотите удалить всех пользователей?")) {
                 usersOnline.length = 0;
                 renderOnlineList();
-            }
-        }
-
-        function showUserCard(user) {
-            const card = document.getElementById('userCard');
-            card.style.display = 'flex';
-            document.getElementById('cardName').textContent = user;
-            document.getElementById('cardUsername').textContent = user;
-        }
-
-        function closeUserCard() {
-            document.getElementById('userCard').style.display = 'none';
-        }
-
-        function kickUser() {
-            alert("Пользователь кикнут");
-        }
-
-        function muteUser() {
-            alert("Пользователь замучен");
-        }
-
-        function banUser() {
-            alert("Пользователь забанен");
-        }
-
-        function updateProfileName() {
-            const newName = document.getElementById('newProfileName').value;
-            if (newName.trim()) {
-                currentUser = newName;
-                document.getElementById('profileName').textContent = newName;
-                alert('Имя успешно обновлено!');
             }
         }
 
