@@ -42,6 +42,9 @@
             font-weight: bold;
             background: #3a3a3a;
             color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .chat-item {
@@ -165,6 +168,12 @@
             color: #ffffff;
         }
 
+        .auth-container p {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
         .auth-container input {
             width: 100%;
             padding: 10px;
@@ -188,21 +197,40 @@
         .auth-container button:hover {
             background: #003f7f;
         }
+
+        .push-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0056b3;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 300;
+        }
     </style>
 </head>
 <body>
     <div id="auth-container" class="auth-container">
         <h3 id="auth-header">Авторизация</h3>
+        <p id="auth-description">Введите свои учетные данные, чтобы войти в систему.</p>
         <input id="username" type="text" placeholder="Логин">
         <input id="password" type="password" placeholder="Пароль">
         <button id="auth-button" onclick="authenticate()">Войти</button>
         <button id="switch-button" onclick="toggleAuthMode()">Нет аккаунта? Зарегистрироваться</button>
     </div>
 
+    <div id="push-notification" class="push-notification"></div>
+
     <div id="chat-container" style="display:none;">
         <div class="main-container">
             <div class="chat-list" id="chatList">
-                <div class="chat-list-header">Доступные чаты</div>
+                <div class="chat-list-header">
+                    Доступные чаты
+                    <button onclick="showCreateChatModal()">+</button>
+                </div>
                 <div class="chat-item" onclick="switchChat('general')" id="general">Общий чат</div>
                 <div class="chat-item" onclick="switchChat('sports')" id="sports">Спорт</div>
                 <div class="chat-item" onclick="switchChat('tech')" id="tech">Технологии</div>
@@ -211,6 +239,7 @@
                 <div class="chat-header">
                     <span id="chatHeader">Общий чат</span>
                     <span id="chatUsers" class="chat-users">Подключено: 0</span>
+                    <button onclick="showAddFriendModal()">Добавить друга</button>
                 </div>
                 <div id="messages" class="chat-messages"></div>
                 <div class="chat-input">
@@ -221,12 +250,29 @@
         </div>
     </div>
 
+    <div id="create-chat-modal" class="modal">
+        <h3>Создать новый чат</h3>
+        <input id="newChatName" type="text" placeholder="Название чата">
+        <button onclick="createNewChat()">Создать</button>
+        <button onclick="closeCreateChatModal()">Закрыть</button>
+    </div>
+
+    <div id="add-friend-modal" class="modal">
+        <h3>Добавить друга</h3>
+        <input id="friendName" type="text" placeholder="Имя друга">
+        <button onclick="addFriend()">Добавить</button>
+        <button onclick="closeAddFriendModal()">Закрыть</button>
+    </div>
+
     <script>
         let isLoginMode = true;
 
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
             document.getElementById('auth-header').textContent = isLoginMode ? 'Авторизация' : 'Регистрация';
+            document.getElementById('auth-description').textContent = isLoginMode
+                ? 'Введите свои учетные данные, чтобы войти в систему.'
+                : 'Создайте учетную запись, чтобы начать пользоваться чатом.';
             document.getElementById('auth-button').textContent = isLoginMode ? 'Войти' : 'Зарегистрироваться';
             document.getElementById('switch-button').textContent = isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти';
         }
@@ -235,19 +281,30 @@
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
             if (!username || !password) {
-                alert('Все поля обязательны для заполнения!');
+                showPushNotification('Все поля обязательны для заполнения!');
                 return;
             }
 
             if (isLoginMode) {
                 console.log('Вход:', { username, password });
+                showPushNotification('Вы успешно вошли в систему!');
                 document.getElementById('auth-container').style.display = 'none';
                 document.getElementById('chat-container').style.display = 'flex';
             } else {
                 console.log('Регистрация:', { username, password });
-                alert('Регистрация успешна! Теперь войдите.');
+                showPushNotification('Регистрация успешна! Теперь войдите.');
                 toggleAuthMode();
             }
+        }
+
+        function showPushNotification(message) {
+            const notification = document.getElementById('push-notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
         }
 
         // WebSocket Initialization
@@ -271,6 +328,7 @@
             tech: []
         };
 
+        const friends = [];
         let currentChat = 'general';
 
         function switchChat(chatName) {
@@ -304,6 +362,58 @@
                 ws.send(JSON.stringify(message));
                 messageInput.value = '';
             }
+        }
+
+        function showCreateChatModal() {
+            document.getElementById('create-chat-modal').style.display = 'block';
+        }
+
+        function closeCreateChatModal() {
+            document.getElementById('create-chat-modal').style.display = 'none';
+        }
+
+        function createNewChat() {
+            const chatName = document.getElementById('newChatName').value.trim();
+            if (!chatName) {
+                showPushNotification('Введите название чата!');
+                return;
+            }
+            if (chatHistory[chatName]) {
+                showPushNotification('Чат с таким названием уже существует!');
+                return;
+            }
+            chatHistory[chatName] = [];
+            const chatList = document.getElementById('chatList');
+            const newChatItem = document.createElement('div');
+            newChatItem.className = 'chat-item';
+            newChatItem.textContent = chatName;
+            newChatItem.onclick = () => switchChat(chatName);
+            chatList.appendChild(newChatItem);
+            closeCreateChatModal();
+            showPushNotification(`Чат "${chatName}" успешно создан!`);
+        }
+
+        function showAddFriendModal() {
+            document.getElementById('add-friend-modal').style.display = 'block';
+        }
+
+        function closeAddFriendModal() {
+            document.getElementById('add-friend-modal').style.display = 'none';
+        }
+
+        function addFriend() {
+            const friendName = document.getElementById('friendName').value.trim();
+            if (!friendName) {
+                showPushNotification('Введите имя друга!');
+                return;
+            }
+            if (friends.includes(friendName)) {
+                showPushNotification('Этот пользователь уже в списке друзей!');
+                return;
+            }
+            friends.push(friendName);
+            showPushNotification(`${friendName} добавлен в друзья!`);
+            closeAddFriendModal();
         }
 
         document.getElementById('messageInput').addEventListener('keydown', (event) => {
