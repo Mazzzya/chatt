@@ -18,7 +18,7 @@
         }
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -38,7 +38,7 @@
             margin-top: 20px;
         }
         .messages {
-            width: 500px;
+            width: 100%;
             height: 400px;
             overflow-y: auto;
             background: #f9f9f9;
@@ -105,6 +105,17 @@
             opacity: 1;
             transform: translateY(0);
         }
+        .search-box {
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .search-box input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -148,7 +159,11 @@
         <button onclick="muteUser()">Мут</button>
         <button onclick="banUser()">Бан</button>
         <button onclick="renameUser()">Переименовать</button>
-        <button onclick="deleteAllUsers()">Удалить всех пользователей</button>
+        <button onclick="confirmDeleteAllUsers()">Удалить всех пользователей</button>
+        <div class="search-box">
+            <input type="text" id="searchUser" placeholder="Поиск пользователя по имени..." oninput="searchUsers()">
+            <div id="searchResults"></div>
+        </div>
         <div id="adminData"></div>
         <button onclick="toggleBox('auth')">Выйти</button>
     </div>
@@ -202,6 +217,54 @@
         function loadAdminData() {
             const adminData = document.getElementById('adminData');
             adminData.innerHTML = '<p>Здесь будет отображаться информация о пользователях</p>';
+        }
+
+        async function confirmDeleteAllUsers() {
+            if (confirm('Вы уверены, что хотите удалить всех пользователей?')) {
+                try {
+                    const response = await fetch(`${API_URL}/deleteAllUsers`, { method: 'DELETE' });
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast('Все пользователи удалены!');
+                        loadAdminData();
+                    } else {
+                        showToast('Не удалось удалить пользователей.');
+                    }
+                } catch (error) {
+                    showToast('Ошибка удаления. Попробуйте позже.');
+                }
+            }
+        }
+
+        async function searchUsers() {
+            const query = document.getElementById('searchUser').value.trim();
+            if (query) {
+                try {
+                    const response = await fetch(`${API_URL}/searchUsers?query=${query}`);
+                    const users = await response.json();
+
+                    const resultsDiv = document.getElementById('searchResults');
+                    resultsDiv.innerHTML = '';
+
+                    users.forEach(user => {
+                        const userDiv = document.createElement('div');
+                        userDiv.textContent = user.name;
+                        userDiv.onclick = () => showUserCard(user);
+                        resultsDiv.appendChild(userDiv);
+                    });
+                } catch (error) {
+                    showToast('Ошибка поиска. Попробуйте позже.');
+                }
+            }
+        }
+
+        function showUserCard(user) {
+            const adminData = document.getElementById('adminData');
+            adminData.innerHTML = `
+                <h3>Информация о пользователе</h3>
+                <p>Имя: ${user.name}</p>
+                <p>Логин: ${user.username}</p>
+            `;
         }
 
         document.getElementById('registerButton').addEventListener('click', async () => {
