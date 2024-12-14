@@ -8,48 +8,68 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
             margin: 0;
             background: linear-gradient(to bottom, #4facfe, #00f2fe);
             color: #333;
         }
         .container {
-            width: 100%;
-            max-width: 500px;
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+        }
+        .chat-box {
+            flex: 2;
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             overflow: hidden;
-            text-align: center;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-        .container:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-        .chat-box, .admin-login-box, .admin-panel-box {
-            display: none;
+            display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            margin-top: 20px;
+        }
+        .chat-header {
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            text-align: center;
+            font-size: 18px;
         }
         .messages {
-            width: 100%;
-            height: 400px;
+            flex: 1;
             overflow-y: auto;
-            background: #f9f9f9;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
             padding: 10px;
+            background: #f9f9f9;
+        }
+        .message {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        .message .content {
+            padding: 10px;
+            background: #e6e6e6;
             border-radius: 10px;
+            margin-left: 10px;
+            position: relative;
+        }
+        .message.me .content {
+            background: #007bff;
+            color: white;
+            margin-left: 0;
+            margin-right: 10px;
+        }
+        .message .time {
+            font-size: 10px;
+            margin-left: 5px;
         }
         .input-box {
             display: flex;
-            align-items: center;
+            padding: 10px;
+            background: #f1f1f1;
         }
         .input-box input {
             flex: 1;
@@ -65,310 +85,104 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
+            transition: background 0.3s ease;
         }
         .input-box button:hover {
             background: #0056b3;
-            transform: scale(1.1);
         }
-        .admin-panel-box button {
-            padding: 10px 15px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin: 5px;
-            transition: background 0.3s ease, transform 0.2s ease;
-            cursor: pointer;
-        }
-        .admin-panel-box button:hover {
-            background: #218838;
-            transform: scale(1.1);
-        }
-        .notification {
-            color: red;
-            margin: 10px 0;
-        }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            opacity: 0;
-            transform: translateY(50px);
-            transition: opacity 0.5s, transform 0.5s;
-        }
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .search-box {
-            margin: 10px 0;
-            display: flex;
-            flex-direction: column;
-        }
-        .search-box input {
+        .admin-panel {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+        }
+        .admin-panel h3 {
             margin-bottom: 10px;
+            color: #007bff;
+        }
+        .online-list {
+            background: #f1f1f1;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            height: 200px;
+            overflow-y: auto;
+        }
+        .online-user {
+            padding: 5px;
+            margin: 5px 0;
+            background: #e6e6e6;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .online-user:hover {
+            background: #ccc;
         }
     </style>
 </head>
 <body>
-    <div class="container auth-box">
-        <h2>Добро пожаловать!</h2>
-        <button onclick="toggleBox('registration')">Регистрация</button>
-        <button onclick="toggleBox('login')">Авторизация</button>
-    </div>
-
-    <div class="container registration-box" style="display: none;">
-        <h2>Регистрация</h2>
-        <div class="notification" id="registerNotification"></div>
-        <input type="text" id="regName" placeholder="Введите имя">
-        <input type="text" id="regUsername" placeholder="Введите логин">
-        <input type="password" id="regPassword" placeholder="Введите пароль">
-        <button id="registerButton">Зарегистрироваться</button>
-        <button onclick="toggleBox('auth')">Назад</button>
-    </div>
-
-    <div class="container login-box" style="display: none;">
-        <h2>Авторизация</h2>
-        <div class="notification" id="loginNotification"></div>
-        <input type="text" id="loginUsername" placeholder="Введите логин">
-        <input type="password" id="loginPassword" placeholder="Введите пароль">
-        <button id="loginButton">Войти</button>
-        <button onclick="toggleBox('auth')">Назад</button>
-    </div>
-
-    <div class="container admin-login-box" style="display: none;">
-        <h2>Вход в админ-панель</h2>
-        <div class="notification" id="adminLoginNotification"></div>
-        <input type="text" id="adminLogin" placeholder="Введите логин">
-        <input type="password" id="adminPassword" placeholder="Введите пароль">
-        <button onclick="adminLogin()">Войти</button>
-        <button onclick="toggleBox('auth')">Назад</button>
-    </div>
-
-    <div class="container admin-panel-box" style="display: none;">
-        <h2>Админ-панель</h2>
-        <button onclick="showDatabase()">База данных</button>
-        <button onclick="muteUser()">Мут</button>
-        <button onclick="banUser()">Бан</button>
-        <button onclick="renameUser()">Переименовать</button>
-        <button onclick="confirmDeleteAllUsers()">Удалить всех пользователей</button>
-        <div class="search-box">
-            <input type="text" id="searchUser" placeholder="Поиск пользователя по имени..." oninput="searchUsers()">
-            <div id="searchResults"></div>
+    <div class="container">
+        <div class="chat-box">
+            <div class="chat-header">Чат</div>
+            <div class="messages" id="messages"></div>
+            <div class="input-box">
+                <input type="text" id="chatInput" placeholder="Введите сообщение...">
+                <button onclick="sendMessage()">Отправить</button>
+            </div>
         </div>
-        <div id="adminData"></div>
-        <button onclick="toggleBox('auth')">Выйти</button>
-    </div>
 
-    <div class="container chat-box" id="chatBox">
-        <h2>Чат</h2>
-        <button onclick="toggleBox('adminLogin')">Админ-панель</button>
-        <button onclick="logout()">Выйти</button>
-        <div class="messages" id="messages"></div>
-        <div class="input-box">
-            <input type="text" id="chatInput" placeholder="Введите сообщение...">
-            <button onclick="sendMessage()">Отправить</button>
+        <div class="admin-panel">
+            <h3>Админ-панель</h3>
+            <div class="online-list" id="onlineList">
+                <h4>Пользователи онлайн:</h4>
+            </div>
+            <button onclick="toggleAdminPanel()">Назад</button>
         </div>
     </div>
-
-    <div class="toast" id="toast"></div>
 
     <script>
-        let currentUser = null;
-        let socket = null;
-        const API_URL = 'https://tan-uttermost-grease.glitch.me';
+        let currentUser = "TestUser";
+        const usersOnline = ["TestUser", "Admin", "User1"];
 
-        function toggleBox(box) {
-            document.querySelector('.auth-box').style.display = box === 'auth' ? 'block' : 'none';
-            document.querySelector('.registration-box').style.display = box === 'registration' ? 'block' : 'none';
-            document.querySelector('.login-box').style.display = box === 'login' ? 'block' : 'none';
-            document.querySelector('.admin-login-box').style.display = box === 'adminLogin' ? 'block' : 'none';
-            document.querySelector('.admin-panel-box').style.display = box === 'adminPanel' ? 'block' : 'none';
-            document.querySelector('.chat-box').style.display = box === 'chatBox' ? 'block' : 'none';
+        function renderOnlineList() {
+            const list = document.getElementById('onlineList');
+            list.innerHTML = '';
+            usersOnline.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'online-user';
+                userDiv.textContent = user;
+                userDiv.onclick = () => showUserCard(user);
+                list.appendChild(userDiv);
+            });
         }
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        async function adminLogin() {
-            const login = document.getElementById('adminLogin').value;
-            const password = document.getElementById('adminPassword').value;
-
-            if (login === 'admin' && password === 'v444123') {
-                toggleBox('adminPanel');
-                loadAdminData();
-            } else {
-                showToast('Неверный логин или пароль!');
-            }
-        }
-
-        function loadAdminData() {
-            const adminData = document.getElementById('adminData');
-            adminData.innerHTML = '<p>Здесь будет отображаться информация о пользователях</p>';
-        }
-
-        async function confirmDeleteAllUsers() {
-            if (confirm('Вы уверены, что хотите удалить всех пользователей?')) {
-                try {
-                    const response = await fetch(`${API_URL}/deleteAllUsers`, { method: 'DELETE' });
-                    const result = await response.json();
-                    if (result.success) {
-                        showToast('Все пользователи удалены!');
-                        loadAdminData();
-                    } else {
-                        showToast('Не удалось удалить пользователей.');
-                    }
-                } catch (error) {
-                    showToast('Ошибка удаления. Попробуйте позже.');
-                }
-            }
-        }
-
-        async function searchUsers() {
-            const query = document.getElementById('searchUser').value.trim();
-            if (query) {
-                try {
-                    const response = await fetch(`${API_URL}/searchUsers?query=${query}`);
-                    const users = await response.json();
-
-                    const resultsDiv = document.getElementById('searchResults');
-                    resultsDiv.innerHTML = '';
-
-                    users.forEach(user => {
-                        const userDiv = document.createElement('div');
-                        userDiv.textContent = user.name;
-                        userDiv.onclick = () => showUserCard(user);
-                        resultsDiv.appendChild(userDiv);
-                    });
-                } catch (error) {
-                    showToast('Ошибка поиска. Попробуйте позже.');
-                }
-            }
-        }
-
-        function showUserCard(user) {
-            const adminData = document.getElementById('adminData');
-            adminData.innerHTML = `
-                <h3>Информация о пользователе</h3>
-                <p>Имя: ${user.name}</p>
-                <p>Логин: ${user.username}</p>
-            `;
-        }
-
-        document.getElementById('registerButton').addEventListener('click', async () => {
-            const name = document.getElementById('regName').value.trim();
-            const username = document.getElementById('regUsername').value.trim();
-            const password = document.getElementById('regPassword').value.trim();
-
-            if (!name || !username || !password) {
-                showToast('Все поля обязательны для заполнения!');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, username, password })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showToast('Регистрация успешна!');
-                    toggleBox('login');
-                } else {
-                    showToast(result.message);
-                }
-            } catch (error) {
-                showToast('Ошибка регистрации. Попробуйте позже.');
-            }
-        });
-
-        document.getElementById('loginButton').addEventListener('click', async () => {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-
-            if (!username || !password) {
-                showToast('Введите логин и пароль!');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    currentUser = result.name;
-                    showToast(`Добро пожаловать, ${result.name}!`);
-                    toggleBox('chatBox');
-                    connectToChat();
-                } else {
-                    showToast(result.message);
-                }
-            } catch (error) {
-                showToast('Ошибка авторизации. Попробуйте позже.');
-            }
-        });
-
-        function connectToChat() {
-            socket = new WebSocket('wss://tan-uttermost-grease.glitch.me');
-
-            socket.onmessage = (event) => {
-                const messages = document.getElementById('messages');
-                const message = document.createElement('div');
-                message.textContent = event.data;
-                messages.appendChild(message);
-                messages.scrollTop = messages.scrollHeight;
-            };
-
-            socket.onopen = () => {
-                socket.send(`${currentUser} подключился к чату.`);
-            };
-
-            socket.onclose = () => {
-                showToast('Соединение с сервером потеряно.');
-            };
+        function toggleAdminPanel() {
+            document.querySelector('.admin-panel').style.display =
+                document.querySelector('.admin-panel').style.display === 'none' ? 'block' : 'none';
         }
 
         function sendMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
-
-            if (message && socket) {
-                socket.send(`${currentUser}: ${message}`);
+            if (message) {
+                const messagesContainer = document.getElementById('messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message me';
+                messageDiv.innerHTML = `<span class='content'>${message}</span>`;
+                messagesContainer.appendChild(messageDiv);
                 input.value = '';
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
         }
 
-        document.getElementById('chatInput').addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        function logout() {
-            if (socket) {
-                socket.close();
-            }
-            currentUser = null;
-            toggleBox('auth');
+        function showUserCard(user) {
+            alert(`Пользователь: ${user}`);
         }
+
+        renderOnlineList();
     </script>
 </body>
 </html>
