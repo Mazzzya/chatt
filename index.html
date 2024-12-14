@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кликер-чат</title>
+    <title>Чат</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,21 +61,6 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        .menu {
-            margin-top: 20px;
-        }
-        .menu button {
-            margin: 5px;
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .menu button:hover {
-            background: #0056b3;
-        }
     </style>
 </head>
 <body>
@@ -102,12 +87,6 @@
         <button onclick="toggleBox('auth')">Назад</button>
     </div>
 
-    <div class="container menu" id="menuBox" style="display: none;">
-        <h2>Кликер-чат</h2>
-        <button onclick="showClicker()">Кликер</button>
-        <button onclick="showChat()">Чат</button>
-    </div>
-
     <div class="container chat-box" id="chatBox">
         <h2>Чат</h2>
         <div class="messages" id="messages"></div>
@@ -115,20 +94,12 @@
             <input type="text" id="chatInput" placeholder="Введите сообщение...">
             <button onclick="sendMessage()">Отправить</button>
         </div>
-        <button onclick="showMenu()">Назад</button>
-    </div>
-
-    <div class="container clicker-box" id="clickerBox" style="display: none;">
-        <h2>Кликер</h2>
-        <div>Очки: <span id="points">0</span></div>
-        <button onclick="addPoints()">Клик!</button>
-        <button onclick="showMenu()">Назад</button>
     </div>
 
     <script>
         let currentUser = null;
         let socket = null;
-        let points = 0;
+        const API_URL = 'https://tan-uttermost-grease.glitch.me';
 
         function toggleBox(box) {
             document.querySelector('.auth-box').style.display = box === 'auth' ? 'block' : 'none';
@@ -136,23 +107,7 @@
             document.querySelector('.login-box').style.display = box === 'login' ? 'block' : 'none';
         }
 
-        function showMenu() {
-            document.getElementById('menuBox').style.display = 'block';
-            document.getElementById('chatBox').style.display = 'none';
-            document.getElementById('clickerBox').style.display = 'none';
-        }
-
-        function showChat() {
-            document.getElementById('menuBox').style.display = 'none';
-            document.getElementById('chatBox').style.display = 'block';
-        }
-
-        function showClicker() {
-            document.getElementById('menuBox').style.display = 'none';
-            document.getElementById('clickerBox').style.display = 'block';
-        }
-
-        document.getElementById('registerButton').addEventListener('click', () => {
+        document.getElementById('registerButton').addEventListener('click', async () => {
             const name = document.getElementById('regName').value.trim();
             const username = document.getElementById('regUsername').value.trim();
             const password = document.getElementById('regPassword').value.trim();
@@ -162,21 +117,53 @@
                 return;
             }
 
-            alert('Регистрация успешна!');
-            toggleBox('login');
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, username, password })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Регистрация успешна!');
+                    toggleBox('login');
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('Ошибка регистрации. Попробуйте позже.');
+            }
         });
 
-        document.getElementById('loginButton').addEventListener('click', () => {
+        document.getElementById('loginButton').addEventListener('click', async () => {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
 
-            if (username && password) {
-                alert(`Добро пожаловать, ${username}!`);
-                currentUser = username;
-                document.getElementById('menuBox').style.display = 'block';
-                document.querySelector('.login-box').style.display = 'none';
-            } else {
-                alert('Неверный логин или пароль!');
+            if (!username || !password) {
+                alert('Введите логин и пароль!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert(`Добро пожаловать, ${result.name}!`);
+                    currentUser = result.name;
+                    document.querySelector('.login-box').style.display = 'none';
+                    document.getElementById('chatBox').style.display = 'block';
+                    connectToChat();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('Ошибка авторизации. Попробуйте позже.');
             }
         });
 
@@ -210,10 +197,12 @@
             }
         }
 
-        function addPoints() {
-            points++;
-            document.getElementById('points').textContent = points;
-        }
+        // Добавляем возможность отправки сообщения по нажатию Enter
+        document.getElementById('chatInput').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
     </script>
 </body>
 </html>
