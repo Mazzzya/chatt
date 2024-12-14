@@ -3,260 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мессенджер</title>
+    <title>Онлайн-чат</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f3f3;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            background: linear-gradient(to bottom, #4facfe, #00f2fe);
-            color: #333;
         }
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            display: flex;
-            gap: 20px;
-        }
-        .admin-panel {
-            flex: 1;
-            background: white;
+        .chat-container {
+            width: 400px;
+            max-width: 100%;
+            background: #fff;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .admin-panel h3 {
-            margin-bottom: 10px;
-            color: #007bff;
-        }
-        .chat-box {
-            flex: 2;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
         .chat-header {
-            padding: 10px;
-            background: #007bff;
-            color: white;
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px;
             text-align: center;
-            font-size: 18px;
+            font-size: 20px;
         }
-        .messages {
+        .chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 10px;
-            background: #f9f9f9;
+            background-color: #e9ecef;
         }
         .message {
-            margin: 5px 0;
-            display: flex;
-            align-items: flex-end;
-        }
-        .message .content {
-            padding: 10px;
-            background: #e6e6e6;
-            border-radius: 10px;
-            margin-left: 10px;
-            position: relative;
-            max-width: 60%;
-            word-wrap: break-word;
-        }
-        .message.me .content {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 5px;
             background: #007bff;
-            color: white;
-            margin-left: 0;
-            margin-right: 10px;
+            color: #fff;
+            max-width: 70%;
         }
-        .message .time {
-            font-size: 10px;
-            margin-left: 5px;
+        .message.me {
+            background: #6c757d;
+            margin-left: auto;
         }
-        .input-box {
+        .chat-input {
             display: flex;
-            padding: 10px;
-            background: #f1f1f1;
+            border-top: 1px solid #ddd;
         }
-        .input-box input {
+        .chat-input input {
             flex: 1;
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-right: 10px;
+            border: none;
+            border-radius: 0;
+            outline: none;
         }
-        .input-box button {
-            padding: 10px 20px;
+        .chat-input button {
+            padding: 10px;
             background: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
-            transition: background 0.3s ease;
         }
-        .input-box button:hover {
+        .chat-input button:hover {
             background: #0056b3;
-        }
-        .online-list {
-            flex: 1;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            overflow-y: auto;
-        }
-        .online-list h3 {
-            margin-bottom: 10px;
-            color: #007bff;
-        }
-        .online-user {
-            padding: 5px;
-            margin: 5px 0;
-            background: #e6e6e6;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        .online-user:hover {
-            background: #ccc;
-        }
-        .auth-box {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .auth-box.active {
-            display: flex;
         }
     </style>
 </head>
 <body>
-    <div class="container auth-box active" id="authBox">
-        <h3>Регистрация и Авторизация</h3>
-        <input type="text" id="authName" placeholder="Имя">
-        <input type="text" id="authUsername" placeholder="Логин">
-        <input type="password" id="authPassword" placeholder="Пароль">
-        <button onclick="registerUser()">Зарегистрироваться</button>
-        <button onclick="loginUser()">Войти</button>
-    </div>
-
-    <div class="container" id="mainContainer" style="display: none;">
-        <div class="admin-panel">
-            <h3>Админ-панель</h3>
-            <button onclick="toggleAdminPanel()">Назад</button>
-            <button onclick="clearUsers()">Удалить всех пользователей</button>
-        </div>
-
-        <div class="chat-box">
-            <div class="chat-header">Чат</div>
-            <div class="messages" id="messages"></div>
-            <div class="input-box">
-                <input type="text" id="chatInput" placeholder="Введите сообщение...">
-                <button onclick="sendMessage()">Отправить</button>
-            </div>
-        </div>
-
-        <div class="online-list" id="onlineList">
-            <h3>Пользователи онлайн</h3>
+    <div class="chat-container">
+        <div class="chat-header">Онлайн-чат</div>
+        <div id="messages" class="chat-messages"></div>
+        <div class="chat-input">
+            <input id="messageInput" type="text" placeholder="Введите сообщение...">
+            <button onclick="sendMessage()">Отправить</button>
         </div>
     </div>
 
     <script>
-        let currentUser = null;
-        const users = [];
-        const usersOnline = [];
+        const ws = new WebSocket('ws://localhost:3000'); // Подключение к серверу WebSocket
 
-        function registerUser() {
-            const name = document.getElementById('authName').value.trim();
-            const username = document.getElementById('authUsername').value.trim();
-            const password = document.getElementById('authPassword').value.trim();
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
 
-            if (!name || !username || !password) {
-                alert("Все поля обязательны для заполнения!");
-                return;
-            }
+        // Получение сообщений с сервера
+        ws.onmessage = (event) => {
+            const message = document.createElement('div');
+            message.className = 'message';
+            message.textContent = event.data;
+            messagesContainer.appendChild(message);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        };
 
-            if (users.some(user => user.username === username)) {
-                alert("Логин уже используется!");
-                return;
-            }
-
-            users.push({ name, username, password });
-            alert("Регистрация успешна!");
-        }
-
-        function loginUser() {
-            const username = document.getElementById('authUsername').value.trim();
-            const password = document.getElementById('authPassword').value.trim();
-
-            const user = users.find(user => user.username === username && user.password === password);
-            if (!user) {
-                alert("Неверный логин или пароль!");
-                return;
-            }
-
-            currentUser = user;
-            usersOnline.push(user);
-            alert(`Добро пожаловать, ${user.name}!`);
-
-            document.getElementById('authBox').style.display = 'none';
-            document.getElementById('mainContainer').style.display = 'flex';
-
-            renderOnlineList();
-        }
-
-        function renderOnlineList() {
-            const list = document.getElementById('onlineList');
-            list.innerHTML = '';
-            usersOnline.forEach(user => {
-                const userDiv = document.createElement('div');
-                userDiv.className = 'online-user';
-                userDiv.textContent = user.name;
-                userDiv.onclick = () => alert(`Карточка пользователя: ${user.name}`);
-                list.appendChild(userDiv);
-            });
-        }
-
-        function toggleAdminPanel() {
-            const adminPanel = document.querySelector('.admin-panel');
-            const chatBox = document.querySelector('.chat-box');
-            adminPanel.style.display = adminPanel.style.display === 'none' ? 'flex' : 'none';
-            chatBox.style.display = chatBox.style.display === 'none' ? 'flex' : 'none';
-        }
-
+        // Отправка сообщения на сервер
         function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
+            const message = messageInput.value.trim();
             if (message) {
-                const messagesContainer = document.getElementById('messages');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message me';
-                const time = new Date().toLocaleTimeString();
-                messageDiv.innerHTML = `<span class='content'>${message}</span><span class='time'>${time}</span>`;
-                messagesContainer.appendChild(messageDiv);
-                input.value = '';
+                ws.send(message);
+                const myMessage = document.createElement('div');
+                myMessage.className = 'message me';
+                myMessage.textContent = message;
+                messagesContainer.appendChild(myMessage);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        }
-
-        function clearUsers() {
-            if (confirm("Вы уверены, что хотите удалить всех пользователей?")) {
-                usersOnline.length = 0;
-                renderOnlineList();
+                messageInput.value = '';
             }
         }
     </script>
