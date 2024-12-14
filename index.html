@@ -25,22 +25,28 @@
             overflow: hidden;
             text-align: center;
             padding: 20px;
+            transition: all 0.3s ease;
         }
-        .chat-box {
+        .container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        .chat-box, .admin-login-box, .admin-panel-box {
             display: none;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
             margin-top: 20px;
+            margin-left: 40%; /* Перенос чата вправо */
         }
         .messages {
-            width: 100%;
-            max-width: 400px;
-            height: 300px;
+            width: 500px;
+            height: 400px;
             overflow-y: auto;
             background: #f9f9f9;
             border: 1px solid #ccc;
             margin-bottom: 10px;
             padding: 10px;
+            border-radius: 10px;
         }
         .input-box {
             display: flex;
@@ -60,6 +66,25 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .input-box button:hover {
+            background: #0056b3;
+            transform: scale(1.1);
+        }
+        .admin-panel-box button {
+            padding: 10px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+            transition: background 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+        }
+        .admin-panel-box button:hover {
+            background: #218838;
+            transform: scale(1.1);
         }
         .notification {
             color: red;
@@ -72,6 +97,7 @@
         <h2>Добро пожаловать!</h2>
         <button onclick="toggleBox('registration')">Регистрация</button>
         <button onclick="toggleBox('login')">Авторизация</button>
+        <button onclick="toggleBox('adminLogin')">Админ-панель</button>
     </div>
 
     <div class="container registration-box" style="display: none;">
@@ -93,6 +119,25 @@
         <button onclick="toggleBox('auth')">Назад</button>
     </div>
 
+    <div class="container admin-login-box" style="display: none;">
+        <h2>Вход в админ-панель</h2>
+        <div class="notification" id="adminLoginNotification"></div>
+        <input type="text" id="adminLogin" placeholder="Введите логин">
+        <input type="password" id="adminPassword" placeholder="Введите пароль">
+        <button onclick="adminLogin()">Войти</button>
+        <button onclick="toggleBox('auth')">Назад</button>
+    </div>
+
+    <div class="container admin-panel-box" style="display: none;">
+        <h2>Админ-панель</h2>
+        <button onclick="showDatabase()">База данных</button>
+        <button onclick="muteUser()">Мут</button>
+        <button onclick="banUser()">Бан</button>
+        <button onclick="renameUser()">Переименовать</button>
+        <div id="adminData"></div>
+        <button onclick="toggleBox('auth')">Выйти</button>
+    </div>
+
     <div class="container chat-box" id="chatBox">
         <h2>Чат</h2>
         <button onclick="logout()">Выйти</button>
@@ -112,130 +157,46 @@
             document.querySelector('.auth-box').style.display = box === 'auth' ? 'block' : 'none';
             document.querySelector('.registration-box').style.display = box === 'registration' ? 'block' : 'none';
             document.querySelector('.login-box').style.display = box === 'login' ? 'block' : 'none';
+            document.querySelector('.admin-login-box').style.display = box === 'adminLogin' ? 'block' : 'none';
+            document.querySelector('.admin-panel-box').style.display = box === 'adminPanel' ? 'block' : 'none';
         }
 
-        function showNotification(id, message) {
-            const notification = document.getElementById(id);
-            notification.textContent = message;
-            setTimeout(() => {
-                notification.textContent = '';
-            }, 3000);
-        }
+        async function adminLogin() {
+            const login = document.getElementById('adminLogin').value;
+            const password = document.getElementById('adminPassword').value;
 
-        document.getElementById('registerButton').addEventListener('click', async () => {
-            const name = document.getElementById('regName').value.trim();
-            const username = document.getElementById('regUsername').value.trim();
-            const password = document.getElementById('regPassword').value.trim();
-
-            if (!name || !username || !password) {
-                showNotification('registerNotification', 'Все поля обязательны для заполнения!');
-                return;
-            }
-
-            if (password.length < 6 || !/[0-9]/.test(password)) {
-                showNotification('registerNotification', 'Пароль должен быть не менее 6 символов и содержать хотя бы одну цифру!');
-                return;
-            }
-
-            const usernameRegex = /^[a-zA-Z0-9_]+$/;
-            if (!usernameRegex.test(username)) {
-                showNotification('registerNotification', 'Логин должен содержать только английские буквы, цифры и символы подчеркивания!');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, username, password })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showNotification('registerNotification', 'Регистрация успешна!');
-                    toggleBox('login');
-                } else {
-                    showNotification('registerNotification', result.message);
-                }
-            } catch (error) {
-                showNotification('registerNotification', 'Ошибка регистрации. Попробуйте позже.');
-            }
-        });
-
-        document.getElementById('loginButton').addEventListener('click', async () => {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-
-            if (!username || !password) {
-                showNotification('loginNotification', 'Введите логин и пароль!');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    currentUser = result.name;
-                    showNotification('loginNotification', `Добро пожаловать, ${result.name}!`);
-                    document.querySelector('.login-box').style.display = 'none';
-                    document.getElementById('chatBox').style.display = 'block';
-                    connectToChat();
-                } else {
-                    showNotification('loginNotification', result.message);
-                }
-            } catch (error) {
-                showNotification('loginNotification', 'Ошибка авторизации. Попробуйте позже.');
-            }
-        });
-
-        function connectToChat() {
-            socket = new WebSocket('wss://tan-uttermost-grease.glitch.me');
-
-            socket.onmessage = (event) => {
-                const messages = document.getElementById('messages');
-                const message = document.createElement('div');
-                message.textContent = event.data;
-                messages.appendChild(message);
-                messages.scrollTop = messages.scrollHeight;
-            };
-
-            socket.onopen = () => {
-                socket.send(`${currentUser} подключился к чату.`);
-            };
-
-            socket.onclose = () => {
-                alert('Соединение с сервером потеряно.');
-            };
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-
-            if (message && socket) {
-                socket.send(`${currentUser}: ${message}`);
-                input.value = '';
+            if (login === 'admin' && password === 'v444123') {
+                toggleBox('adminPanel');
+                loadAdminData();
+            } else {
+                alert('Неверный логин или пароль!');
             }
         }
 
-        document.getElementById('chatInput').addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
+        function loadAdminData() {
+            const adminData = document.getElementById('adminData');
+            adminData.innerHTML = '<p>Здесь будет отображаться информация о пользователях</p>';
+        }
 
-        function logout() {
-            if (socket) {
-                socket.close();
-            }
-            currentUser = null;
-            document.getElementById('chatBox').style.display = 'none';
-            toggleBox('auth');
+        function showDatabase() {
+            alert('Показать базу данных пользователей');
+        }
+
+        function muteUser() {
+            const username = prompt('Введите имя пользователя для мута:');
+            const duration = prompt('Введите длительность мута в минутах:');
+            alert(`Пользователь ${username} будет замучен на ${duration} минут.`);
+        }
+
+        function banUser() {
+            const username = prompt('Введите имя пользователя для бана:');
+            alert(`Пользователь ${username} забанен.`);
+        }
+
+        function renameUser() {
+            const oldName = prompt('Введите текущий логин пользователя:');
+            const newName = prompt('Введите новый логин пользователя:');
+            alert(`Пользователь ${oldName} теперь ${newName}.`);
         }
     </script>
 </body>
