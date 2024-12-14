@@ -118,6 +118,7 @@
     </div>
 
     <script>
+        let currentUser = null;
         const ws = new WebSocket('wss://tan-uttermost-grease.glitch.me');
         const authContainer = document.getElementById('auth-container');
         const chatContainer = document.getElementById('chat-container');
@@ -165,6 +166,7 @@
                 .then(data => {
                     alert(data.message);
                     if (data.success) {
+                        currentUser = data.name;
                         authContainer.style.display = 'none';
                         chatContainer.style.display = 'flex';
                     }
@@ -172,9 +174,10 @@
         }
 
         ws.onmessage = (event) => {
+            const messageData = JSON.parse(event.data);
             const message = document.createElement('div');
-            message.className = 'message';
-            message.textContent = event.data;
+            message.className = `message ${messageData.sender === currentUser ? 'me' : ''}`;
+            message.textContent = `${messageData.sender}: ${messageData.text}`;
             messagesContainer.appendChild(message);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         };
@@ -182,10 +185,11 @@
         function sendMessage() {
             const message = messageInput.value.trim();
             if (message) {
-                ws.send(message);
+                const messageData = { sender: currentUser, text: message };
+                ws.send(JSON.stringify(messageData));
                 const myMessage = document.createElement('div');
                 myMessage.className = 'message me';
-                myMessage.textContent = message;
+                myMessage.textContent = `${currentUser}: ${message}`;
                 messagesContainer.appendChild(myMessage);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 messageInput.value = '';
