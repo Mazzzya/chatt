@@ -117,6 +117,13 @@
                 return;
             }
 
+            // Проверка логина только на английские символы
+            const usernameRegex = /^[a-zA-Z0-9_]+$/;
+            if (!usernameRegex.test(username)) {
+                alert('Логин должен содержать только английские буквы, цифры и символы подчеркивания!');
+                return;
+            }
+
             try {
                 const response = await fetch(`${API_URL}/register`, {
                     method: 'POST',
