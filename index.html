@@ -129,10 +129,32 @@
         .online-user:hover {
             background: #ccc;
         }
+        .auth-box {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .auth-box.active {
+            display: flex;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container auth-box active" id="authBox">
+        <h3>Регистрация и Авторизация</h3>
+        <input type="text" id="authName" placeholder="Имя">
+        <input type="text" id="authUsername" placeholder="Логин">
+        <input type="password" id="authPassword" placeholder="Пароль">
+        <button onclick="registerUser()">Зарегистрироваться</button>
+        <button onclick="loginUser()">Войти</button>
+    </div>
+
+    <div class="container" id="mainContainer" style="display: none;">
         <div class="admin-panel">
             <h3>Админ-панель</h3>
             <button onclick="toggleAdminPanel()">Назад</button>
@@ -154,8 +176,48 @@
     </div>
 
     <script>
-        let currentUser = "TestUser";
-        const usersOnline = ["TestUser", "Admin", "User1"];
+        let currentUser = null;
+        const users = [];
+        const usersOnline = [];
+
+        function registerUser() {
+            const name = document.getElementById('authName').value.trim();
+            const username = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+
+            if (!name || !username || !password) {
+                alert("Все поля обязательны для заполнения!");
+                return;
+            }
+
+            if (users.some(user => user.username === username)) {
+                alert("Логин уже используется!");
+                return;
+            }
+
+            users.push({ name, username, password });
+            alert("Регистрация успешна!");
+        }
+
+        function loginUser() {
+            const username = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+
+            const user = users.find(user => user.username === username && user.password === password);
+            if (!user) {
+                alert("Неверный логин или пароль!");
+                return;
+            }
+
+            currentUser = user;
+            usersOnline.push(user);
+            alert(`Добро пожаловать, ${user.name}!`);
+
+            document.getElementById('authBox').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'flex';
+
+            renderOnlineList();
+        }
 
         function renderOnlineList() {
             const list = document.getElementById('onlineList');
@@ -163,8 +225,8 @@
             usersOnline.forEach(user => {
                 const userDiv = document.createElement('div');
                 userDiv.className = 'online-user';
-                userDiv.textContent = user;
-                userDiv.onclick = () => alert(`Карточка пользователя: ${user}`);
+                userDiv.textContent = user.name;
+                userDiv.onclick = () => alert(`Карточка пользователя: ${user.name}`);
                 list.appendChild(userDiv);
             });
         }
@@ -197,8 +259,6 @@
                 renderOnlineList();
             }
         }
-
-        renderOnlineList();
     </script>
 </body>
 </html>
