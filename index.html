@@ -61,6 +61,10 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        .notification {
+            color: red;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -72,6 +76,7 @@
 
     <div class="container registration-box" style="display: none;">
         <h2>Регистрация</h2>
+        <div class="notification" id="registerNotification"></div>
         <input type="text" id="regName" placeholder="Введите имя">
         <input type="text" id="regUsername" placeholder="Введите логин">
         <input type="password" id="regPassword" placeholder="Введите пароль">
@@ -81,6 +86,7 @@
 
     <div class="container login-box" style="display: none;">
         <h2>Авторизация</h2>
+        <div class="notification" id="loginNotification"></div>
         <input type="text" id="loginUsername" placeholder="Введите логин">
         <input type="password" id="loginPassword" placeholder="Введите пароль">
         <button id="loginButton">Войти</button>
@@ -89,6 +95,7 @@
 
     <div class="container chat-box" id="chatBox">
         <h2>Чат</h2>
+        <button onclick="logout()">Выйти</button>
         <div class="messages" id="messages"></div>
         <div class="input-box">
             <input type="text" id="chatInput" placeholder="Введите сообщение...">
@@ -107,20 +114,32 @@
             document.querySelector('.login-box').style.display = box === 'login' ? 'block' : 'none';
         }
 
+        function showNotification(id, message) {
+            const notification = document.getElementById(id);
+            notification.textContent = message;
+            setTimeout(() => {
+                notification.textContent = '';
+            }, 3000);
+        }
+
         document.getElementById('registerButton').addEventListener('click', async () => {
             const name = document.getElementById('regName').value.trim();
             const username = document.getElementById('regUsername').value.trim();
             const password = document.getElementById('regPassword').value.trim();
 
             if (!name || !username || !password) {
-                alert('Все поля обязательны для заполнения!');
+                showNotification('registerNotification', 'Все поля обязательны для заполнения!');
                 return;
             }
 
-            // Проверка логина только на английские символы
+            if (password.length < 6 || !/[0-9]/.test(password)) {
+                showNotification('registerNotification', 'Пароль должен быть не менее 6 символов и содержать хотя бы одну цифру!');
+                return;
+            }
+
             const usernameRegex = /^[a-zA-Z0-9_]+$/;
             if (!usernameRegex.test(username)) {
-                alert('Логин должен содержать только английские буквы, цифры и символы подчеркивания!');
+                showNotification('registerNotification', 'Логин должен содержать только английские буквы, цифры и символы подчеркивания!');
                 return;
             }
 
@@ -133,13 +152,13 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    alert('Регистрация успешна!');
+                    showNotification('registerNotification', 'Регистрация успешна!');
                     toggleBox('login');
                 } else {
-                    alert(result.message);
+                    showNotification('registerNotification', result.message);
                 }
             } catch (error) {
-                alert('Ошибка регистрации. Попробуйте позже.');
+                showNotification('registerNotification', 'Ошибка регистрации. Попробуйте позже.');
             }
         });
 
@@ -148,7 +167,7 @@
             const password = document.getElementById('loginPassword').value.trim();
 
             if (!username || !password) {
-                alert('Введите логин и пароль!');
+                showNotification('loginNotification', 'Введите логин и пароль!');
                 return;
             }
 
@@ -161,16 +180,16 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    alert(`Добро пожаловать, ${result.name}!`);
                     currentUser = result.name;
+                    showNotification('loginNotification', `Добро пожаловать, ${result.name}!`);
                     document.querySelector('.login-box').style.display = 'none';
                     document.getElementById('chatBox').style.display = 'block';
                     connectToChat();
                 } else {
-                    alert(result.message);
+                    showNotification('loginNotification', result.message);
                 }
             } catch (error) {
-                alert('Ошибка авторизации. Попробуйте позже.');
+                showNotification('loginNotification', 'Ошибка авторизации. Попробуйте позже.');
             }
         });
 
@@ -204,12 +223,20 @@
             }
         }
 
-        // Добавляем возможность отправки сообщения по нажатию Enter
         document.getElementById('chatInput').addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 sendMessage();
             }
         });
+
+        function logout() {
+            if (socket) {
+                socket.close();
+            }
+            currentUser = null;
+            document.getElementById('chatBox').style.display = 'none';
+            toggleBox('auth');
+        }
     </script>
 </body>
 </html>
