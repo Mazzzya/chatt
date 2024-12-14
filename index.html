@@ -3,34 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Онлайн-чат</title>
+    <title>Профессиональный Онлайн-чат</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f3f3f3;
+            background: linear-gradient(135deg, #007bff, #00f2fe);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            color: #333;
         }
         .container {
             width: 400px;
             max-width: 100%;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
         .header {
-            background-color: #007bff;
-            color: #fff;
+            background-color: #0056b3;
+            color: #ffffff;
             padding: 15px;
             text-align: center;
-            font-size: 20px;
+            font-size: 24px;
+            font-weight: bold;
         }
         .form {
             padding: 20px;
@@ -39,35 +41,40 @@
         }
         .form input {
             margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            outline: none;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
         }
         .form button {
-            padding: 10px;
-            background: #007bff;
-            color: white;
+            padding: 12px;
+            background: #0056b3;
+            color: #fff;
+            font-size: 16px;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
-            border-radius: 5px;
+            transition: background-color 0.3s;
         }
         .form button:hover {
-            background: #0056b3;
+            background: #003f7f;
         }
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 10px;
-            background-color: #e9ecef;
+            padding: 20px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         .message {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 5px;
-            background: #007bff;
+            padding: 10px;
+            border-radius: 8px;
+            background: #0056b3;
             color: #fff;
-            max-width: 70%;
+            max-width: 75%;
+            word-wrap: break-word;
         }
         .message.me {
             background: #6c757d;
@@ -76,27 +83,80 @@
         .chat-input {
             display: flex;
             border-top: 1px solid #ddd;
+            padding: 10px;
+            background: #f1f1f1;
         }
         .chat-input input {
             flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 0;
-            outline: none;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-right: 10px;
+            font-size: 16px;
         }
         .chat-input button {
-            padding: 10px;
-            background: #007bff;
+            padding: 12px;
+            background: #0056b3;
             color: white;
+            font-size: 16px;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         .chat-input button:hover {
+            background: #003f7f;
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             background: #0056b3;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        .group-selection {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #0056b3;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .emoji-picker {
+            position: absolute;
+            bottom: 70px;
+            right: 10px;
+            display: none;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+        }
+        .emoji-picker span {
+            cursor: pointer;
+            font-size: 20px;
+            margin: 5px;
+        }
+        .emoji-picker span:hover {
+            transform: scale(1.2);
         }
     </style>
 </head>
 <body>
+    <div class="theme-toggle" id="themeToggle">Темная тема</div>
     <div class="container" id="auth-container">
         <div class="header">Регистрация</div>
         <div class="form">
@@ -110,20 +170,44 @@
 
     <div class="container" id="chat-container" style="display: none;">
         <div class="header">Онлайн-чат</div>
+        <div class="group-selection" id="groupSelection">
+            <button onclick="switchGroup('general')">Общий</button>
+            <button onclick="switchGroup('sports')">Спорт</button>
+            <button onclick="switchGroup('tech')">Технологии</button>
+            <button onclick="togglePrivateChat()">Личные сообщения</button>
+        </div>
         <div id="messages" class="chat-messages"></div>
         <div class="chat-input">
             <input id="messageInput" type="text" placeholder="Введите сообщение...">
             <button onclick="sendMessage()">Отправить</button>
+            <button onclick="toggleEmojiPicker()">😊</button>
         </div>
     </div>
 
+    <div class="emoji-picker" id="emojiPicker">
+        <span onclick="addEmoji('😀')">😀</span>
+        <span onclick="addEmoji('😂')">😂</span>
+        <span onclick="addEmoji('😍')">😍</span>
+        <span onclick="addEmoji('👍')">👍</span>
+        <span onclick="addEmoji('🎉')">🎉</span>
+    </div>
+
+    <div class="notification" id="notification">Новое сообщение!</div>
+
     <script>
         let currentUser = null;
+        let currentGroup = 'general';
+        let darkTheme = false;
+        let privateRecipient = null;
+
         const ws = new WebSocket('wss://tan-uttermost-grease.glitch.me');
         const authContainer = document.getElementById('auth-container');
         const chatContainer = document.getElementById('chat-container');
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
+        const notification = document.getElementById('notification');
+        const themeToggle = document.getElementById('themeToggle');
+        const emojiPicker = document.getElementById('emojiPicker');
 
         function toggleLogin() {
             authContainer.querySelector('.header').textContent = 'Авторизация';
@@ -169,32 +253,92 @@
                         currentUser = data.name;
                         authContainer.style.display = 'none';
                         chatContainer.style.display = 'flex';
+                        loadChatHistory();
                     }
                 });
         }
 
+        function loadChatHistory() {
+            fetch(`https://tan-uttermost-grease.glitch.me/chat-history?group=${currentGroup}`)
+                .then(res => res.json())
+                .then(messages => {
+                    messagesContainer.innerHTML = '';
+                    messages.forEach(({ sender, text }) => {
+                        const message = document.createElement('div');
+                        message.className = `message ${sender === currentUser ? 'me' : ''}`;
+                        message.textContent = `${sender}: ${text}`;
+                        messagesContainer.appendChild(message);
+                    });
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                });
+        }
+
+        function switchGroup(group) {
+            currentGroup = group;
+            privateRecipient = null; // Exit private mode if switching group
+            loadChatHistory();
+        }
+
+        function togglePrivateChat() {
+            const recipient = prompt('Введите имя пользователя для личного сообщения:');
+            if (recipient) {
+                privateRecipient = recipient;
+                alert(`Вы общаетесь с ${recipient}`);
+            }
+        }
+
         ws.onmessage = (event) => {
             const messageData = JSON.parse(event.data);
-            const message = document.createElement('div');
-            message.className = `message ${messageData.sender === currentUser ? 'me' : ''}`;
-            message.textContent = `${messageData.sender}: ${messageData.text}`;
-            messagesContainer.appendChild(message);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            if (
+                (messageData.group === currentGroup && !messageData.privateRecipient) ||
+                (messageData.privateRecipient === currentUser && messageData.sender !== currentUser)
+            ) {
+                const message = document.createElement('div');
+                message.className = `message ${messageData.sender === currentUser ? 'me' : ''}`;
+                message.textContent = `${messageData.sender}: ${messageData.text}`;
+                messagesContainer.appendChild(message);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                showNotification();
+            }
         };
 
         function sendMessage() {
             const message = messageInput.value.trim();
             if (message) {
-                const messageData = { sender: currentUser, text: message };
+                const messageData = {
+                    sender: currentUser,
+                    text: message,
+                    group: privateRecipient ? null : currentGroup,
+                    privateRecipient: privateRecipient,
+                };
                 ws.send(JSON.stringify(messageData));
-                const myMessage = document.createElement('div');
-                myMessage.className = 'message me';
-                myMessage.textContent = `${currentUser}: ${message}`;
-                messagesContainer.appendChild(myMessage);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 messageInput.value = '';
             }
         }
+
+        function toggleEmojiPicker() {
+            emojiPicker.style.display = emojiPicker.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function addEmoji(emoji) {
+            messageInput.value += emoji;
+            emojiPicker.style.display = 'none';
+        }
+
+        function showNotification() {
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            darkTheme = !darkTheme;
+            document.body.style.background = darkTheme
+                ? 'linear-gradient(135deg, #000000, #434343)'
+                : 'linear-gradient(135deg, #007bff, #00f2fe)';
+            themeToggle.textContent = darkTheme ? 'Светлая тема' : 'Темная тема';
+        });
     </script>
 </body>
 </html>
