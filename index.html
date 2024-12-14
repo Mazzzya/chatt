@@ -36,7 +36,6 @@
             flex-direction: column;
             align-items: flex-start;
             margin-top: 20px;
-            margin-left: 40%; /* Перенос чата вправо */
         }
         .messages {
             width: 500px;
@@ -178,6 +177,7 @@
             document.querySelector('.login-box').style.display = box === 'login' ? 'block' : 'none';
             document.querySelector('.admin-login-box').style.display = box === 'adminLogin' ? 'block' : 'none';
             document.querySelector('.admin-panel-box').style.display = box === 'adminPanel' ? 'block' : 'none';
+            document.querySelector('.chat-box').style.display = box === 'chatBox' ? 'block' : 'none';
         }
 
         function showToast(message) {
