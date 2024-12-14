@@ -39,9 +39,11 @@
             background: #2a2a2a;
             color: #e0e0e0;
             font-size: 16px;
+            box-sizing: border-box;
         }
         .auth-container input:focus {
             outline: none;
+            border: 2px solid #0056b3;
         }
         .auth-container button {
             width: 100%;
@@ -178,10 +180,12 @@
             font-size: 16px;
             background: #2a2a2a;
             color: #e0e0e0;
+            box-sizing: border-box;
         }
 
         .chat-input input:focus {
             outline: none;
+            border: 2px solid #0056b3;
         }
 
         .chat-input button {
@@ -222,6 +226,49 @@
             transform: scale(1.2);
         }
 
+        .settings-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 100;
+        }
+
+        .settings-container h3 {
+            margin-bottom: 15px;
+            color: #e0e0e0;
+        }
+
+        .settings-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: none;
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        .settings-container button {
+            width: 100%;
+            padding: 10px;
+            background: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .settings-container button:hover {
+            background: #003f7f;
+        }
+
     </style>
 </head>
 <body>
@@ -246,8 +293,8 @@
                 <div class="chat-header">
                     <span id="chatHeader">Общий чат</span>
                     <span id="chatUsers" class="chat-users">Подключено: 0</span>
-                    <button onclick="toggleSettings()">⚙</button>
-                    <button onclick="toggleUserSettings()">👤</button>
+                    <button onclick="toggleGroupSettings()">⚙</button>
+                    <button onclick="toggleProfileSettings()">👤</button>
                 </div>
                 <div id="messages" class="chat-messages"></div>
                 <div class="chat-input">
@@ -264,6 +311,21 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="group-settings" class="settings-container">
+        <h3>Настройки группы</h3>
+        <input id="groupName" type="text" placeholder="Название группы">
+        <button onclick="saveGroupSettings()">Сохранить</button>
+        <button onclick="toggleGroupSettings()">Закрыть</button>
+    </div>
+
+    <div id="profile-settings" class="settings-container">
+        <h3>Настройки профиля</h3>
+        <input id="profileName" type="text" placeholder="Отображаемое имя">
+        <input id="profileAvatar" type="text" placeholder="Ссылка на аватар">
+        <button onclick="saveProfileSettings()">Сохранить</button>
+        <button onclick="toggleProfileSettings()">Закрыть</button>
     </div>
 
     <script>
@@ -344,6 +406,34 @@
             const messageInput = document.getElementById('messageInput');
             messageInput.value += emoji;
             document.getElementById('emojiPicker').style.display = 'none';
+        }
+
+        function toggleGroupSettings() {
+            const groupSettings = document.getElementById('group-settings');
+            groupSettings.style.display = groupSettings.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function saveGroupSettings() {
+            const groupName = document.getElementById('groupName').value.trim();
+            if (groupName) {
+                document.getElementById('chatHeader').textContent = groupName;
+                alert('Название группы сохранено!');
+            }
+            toggleGroupSettings();
+        }
+
+        function toggleProfileSettings() {
+            const profileSettings = document.getElementById('profile-settings');
+            profileSettings.style.display = profileSettings.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function saveProfileSettings() {
+            const profileName = document.getElementById('profileName').value.trim();
+            const profileAvatar = document.getElementById('profileAvatar').value.trim();
+            if (profileName) userSettings.displayName = profileName;
+            if (profileAvatar) userSettings.avatar = profileAvatar;
+            alert('Настройки профиля сохранены!');
+            toggleProfileSettings();
         }
 
         function capitalizeFirstLetter(string) {
