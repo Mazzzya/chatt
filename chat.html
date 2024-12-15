@@ -10,7 +10,7 @@
     <div id="chat-app">
         <h1>Добро пожаловать в чат!</h1>
         <div id="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; margin-bottom: 10px;"></div>
-        <input type="text" id="messageInput" placeholder="Введите сообщение">
+        <textarea id="messageInput" placeholder="Введите сообщение"></textarea>
         <button onclick="sendMessage()">Отправить</button>
         <button onclick="logout()">Выйти</button>
     </div>
@@ -20,13 +20,11 @@
         const token = localStorage.getItem('token');
         const username = localStorage.getItem('username');
 
-        // Проверка авторизации
         if (!token || !username) {
             alert('Вы не авторизованы!');
             window.location.href = 'index.html';
         }
 
-        // Отправка сообщений
         async function sendMessage() {
             const message = document.getElementById('messageInput').value.trim();
             if (message) {
@@ -49,7 +47,6 @@
             }
         }
 
-        // Загрузка сообщений
         async function loadMessages() {
             try {
                 const response = await fetch(`${SERVER_URL}/messages`);
@@ -61,20 +58,30 @@
                     msgElement.textContent = `${msg.username}: ${msg.message}`;
                     chatBox.appendChild(msgElement);
                 });
-                chatBox.scrollTop = chatBox.scrollHeight; // Прокрутка вниз
+                chatBox.scrollTop = chatBox.scrollHeight;
             } catch (error) {
                 console.error('Ошибка загрузки сообщений:', error);
             }
         }
 
-        // Выйти из чата
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('username');
             window.location.href = 'index.html';
         }
 
-        // Обновление сообщений каждые 3 секунды
+        document.addEventListener('keydown', (event) => {
+            const input = document.getElementById('messageInput');
+            if (event.target === input) {
+                if (event.key === 'Enter' && !event.altKey) {
+                    event.preventDefault();
+                    sendMessage();
+                } else if (event.key === 'Enter' && event.altKey) {
+                    input.value += '\n';
+                }
+            }
+        });
+
         loadMessages();
         setInterval(loadMessages, 3000);
     </script>
