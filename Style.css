@@ -8,12 +8,11 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    color: #333333; /* Исправлено */
 }
 
 #app {
     text-align: center;
-    background: #ffffff; /* Исправлено */
+    background: #ffffff;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -21,32 +20,24 @@ body {
     max-width: 400px;
 }
 
-/* Стили для формы авторизации */
-#login-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 20px;
-}
-
-#login-form input {
+input {
     margin: 10px 0;
     padding: 10px;
-    border: 1px solid #cccccc; /* Исправлено */
+    border: 1px solid #ccc;
     border-radius: 5px;
     width: 100%;
-    max-width: 300px;
 }
 
-#login-form button {
+button {
+    margin: 10px 0;
     padding: 10px 20px;
     background: #007bff;
-    color: #ffffff; /* Исправлено */
+    color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 
-#login-form button:hover {
+button:hover {
     background: #0056b3;
 }

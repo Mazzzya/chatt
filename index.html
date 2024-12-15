@@ -8,13 +8,24 @@
 </head>
 <body>
     <div id="app">
-        <div id="login-form">
+        <!-- Форма регистрации -->
+        <div id="register-form">
+            <h2>Регистрация</h2>
+            <input type="text" id="regUsername" placeholder="Логин">
+            <input type="password" id="regPassword" placeholder="Пароль">
+            <button onclick="register()">Зарегистрироваться</button>
+            <button onclick="showLogin()">Есть аккаунт? Войти</button>
+        </div>
+
+        <!-- Форма авторизации -->
+        <div id="login-form" style="display:none;">
             <h2>Авторизация</h2>
-            <input type="text" id="username" placeholder="Логин">
-            <input type="password" id="password" placeholder="Пароль">
-            <button onclick="handleLogin()">Войти</button>
+            <input type="text" id="loginUsername" placeholder="Логин">
+            <input type="password" id="loginPassword" placeholder="Пароль">
+            <button onclick="login()">Войти</button>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>

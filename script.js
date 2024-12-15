@@ -1,55 +1,63 @@
-// URL сервера Glitch
 const SERVER_URL = 'https://lime-orange-sassafras.glitch.me';
 
-// Авторизация пользователя
-async function handleLogin() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+// Регистрация пользователя
+async function register() {
+    const username = document.getElementById('regUsername').value.trim();
+    const password = document.getElementById('regPassword').value.trim();
 
-    try {
-        if (username && password) {
-            alert(`Добро пожаловать, ${username}!`);
-            showChat(username);
-        } else {
-            alert('Введите логин и пароль');
+    if (username && password) {
+        try {
+            const response = await fetch(`${SERVER_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Регистрация успешна!');
+                showLogin();
+            } else {
+                alert(result.error || 'Ошибка регистрации');
+            }
+        } catch (error) {
+            console.error('Ошибка регистрации:', error);
         }
-    } catch (error) {
-        console.error('Ошибка авторизации:', error);
+    } else {
+        alert('Введите логин и пароль!');
     }
 }
 
-// Отобразить чат
-function showChat(username) {
-    document.getElementById('app').innerHTML = `
-        <h1>Чат</h1>
-        <div id="chat-box">
-            <div id="messages" style="height: 300px; overflow-y: scroll;"></div>
-            <input type="text" id="messageInput" placeholder="Введите сообщение">
-            <button onclick="sendMessage('${username}')">Отправить</button>
-        </div>
-        <button onclick="location.reload()">Выйти</button>
-    `;
-    loadMessages();
-    setInterval(loadMessages, 3000); // Обновление чата каждые 3 секунды
+// Показать форму авторизации
+function showLogin() {
+    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('login-form').style.display = 'block';
 }
 
-// Отправить сообщение
-async function sendMessage(username) {
-    const message = document.getElementById('messageInput').value.trim();
-    if (message) {
+// Авторизация пользователя
+async function login() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    if (username && password) {
         try {
-            await fetch(`${SERVER_URL}/send`, {
+            const response = await fetch(`${SERVER_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, message }),
+                body: JSON.stringify({ username, password }),
             });
-            document.getElementById('messageInput').value = ''; // Очистка поля ввода
-            loadMessages();
+            const result = await response.json();
+            if (result.success) {
+                localStorage.setItem('token', result.token);
+                localStorage.setItem('username', username);
+                window.location.href = 'chat.html'; // Переход в чат
+            } else {
+                alert(result.error || 'Ошибка авторизации');
+            }
         } catch (error) {
-            console.error('Ошибка отправки сообщения:', error);
+            console.error('Ошибка авторизации:', error);
         }
     } else {
-        alert('Сообщение не может быть пустым');
+        alert('Введите логин и пароль!');
     }
 }
 
@@ -58,17 +66,47 @@ async function loadMessages() {
     try {
         const response = await fetch(`${SERVER_URL}/messages`);
         const messages = await response.json();
-        const messagesContainer = document.getElementById('messages');
-        messagesContainer.innerHTML = '';
-
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML = '';
         messages.forEach(msg => {
-            const messageElement = document.createElement('div');
-            messageElement.textContent = `${msg.username}: ${msg.message}`;
-            messagesContainer.appendChild(messageElement);
+            const msgElement = document.createElement('div');
+            msgElement.textContent = `${msg.username}: ${msg.message}`;
+            chatBox.appendChild(msgElement);
         });
-
-        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Автопрокрутка вниз
     } catch (error) {
         console.error('Ошибка загрузки сообщений:', error);
     }
+}
+
+// Отправить сообщение
+async function sendMessage() {
+    const message = document.getElementById('messageInput').value.trim();
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+
+    if (message && token) {
+        try {
+            await fetch(`${SERVER_URL}/send`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token,
+                },
+                body: JSON.stringify({ username, message }),
+            });
+            document.getElementById('messageInput').value = '';
+            loadMessages();
+        } catch (error) {
+            console.error('Ошибка отправки сообщения:', error);
+        }
+    } else {
+        alert('Сообщение не может быть пустым или вы не авторизованы');
+    }
+}
+
+// Выйти из чата
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    window.location.href = 'index.html';
 }

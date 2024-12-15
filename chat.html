@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="chat-app">
+        <h1>Добро пожаловать в чат!</h1>
+        <div id="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; margin-bottom: 10px;"></div>
+        <input type="text" id="messageInput" placeholder="Введите сообщение">
+        <button onclick="sendMessage()">Отправить</button>
+        <button onclick="logout()">Выйти</button>
+    </div>
+
+    <script>
+        const SERVER_URL = 'https://lime-orange-sassafras.glitch.me';
+        const token = localStorage.getItem('token');
+        const username = localStorage.getItem('username');
+
+        // Проверка авторизации
+        if (!token || !username) {
+            alert('Вы не авторизованы!');
+            window.location.href = 'index.html';
+        }
+
+        // Отправка сообщений
+        async function sendMessage() {
+            const message = document.getElementById('messageInput').value.trim();
+            if (message) {
+                try {
+                    await fetch(`${SERVER_URL}/send`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token,
+                        },
+                        body: JSON.stringify({ username, message })
+                    });
+                    document.getElementById('messageInput').value = '';
+                    loadMessages();
+                } catch (error) {
+                    console.error('Ошибка отправки сообщения:', error);
+                }
+            } else {
+                alert('Сообщение не может быть пустым');
+            }
+        }
+
+        // Загрузка сообщений
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${SERVER_URL}/messages`);
+                const messages = await response.json();
+                const chatBox = document.getElementById('chat-box');
+                chatBox.innerHTML = '';
+                messages.forEach(msg => {
+                    const msgElement = document.createElement('div');
+                    msgElement.textContent = `${msg.username}: ${msg.message}`;
+                    chatBox.appendChild(msgElement);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight; // Прокрутка вниз
+            } catch (error) {
+                console.error('Ошибка загрузки сообщений:', error);
+            }
+        }
+
+        // Выйти из чата
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = 'index.html';
+        }
+
+        // Обновление сообщений каждые 3 секунды
+        loadMessages();
+        setInterval(loadMessages, 3000);
+    </script>
+</body>
+</html>
