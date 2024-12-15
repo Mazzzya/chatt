@@ -1,73 +1,74 @@
-// Имитация базы данных
-const usersDatabase = [
-    { username: 'admin', password: 'admin123', role: 'admin' }, // Админ
-    { username: 'user1', password: 'password1', role: 'user' }  // Обычный пользователь
-];
+// URL сервера Glitch
+const SERVER_URL = 'https://lime-orange-sassafras.glitch.me';
 
-// Функция авторизации
-function login(username, password) {
-    const user = usersDatabase.find(u => u.username === username && u.password === password);
+// Авторизация пользователя
+async function handleLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
 
-    if (user) {
-        console.log(`Добро пожаловать, ${user.username}!`);
-        if (user.role === 'admin') {
-            showAdminPanel();
+    try {
+        if (username && password) {
+            alert(`Добро пожаловать, ${username}!`);
+            showChat(username);
         } else {
-            showChat();
+            alert('Введите логин и пароль');
         }
-    } else {
-        alert('Неверный логин или пароль');
+    } catch (error) {
+        console.error('Ошибка авторизации:', error);
     }
 }
 
-// Обработчик формы входа
-function handleLogin() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-    login(username, password);
-}
-
-// Функции отображения интерфейсов
-function showAdminPanel() {
-    document.getElementById('app').innerHTML = `
-        <h1>Админ-панель</h1>
-        <p>Добро пожаловать, Администратор!</p>
-        <button onclick="showChat()">Перейти в чат</button>
-    `;
-}
-
-function showChat() {
+// Отобразить чат
+function showChat(username) {
     document.getElementById('app').innerHTML = `
         <h1>Чат</h1>
         <div id="chat-box">
-            <div id="messages"></div>
+            <div id="messages" style="height: 300px; overflow-y: scroll;"></div>
             <input type="text" id="messageInput" placeholder="Введите сообщение">
-            <button onclick="sendMessage()">Отправить</button>
+            <button onclick="sendMessage('${username}')">Отправить</button>
         </div>
-        <button onclick="showLogin()">Выйти</button>
+        <button onclick="location.reload()">Выйти</button>
     `;
+    loadMessages();
+    setInterval(loadMessages, 3000); // Обновление чата каждые 3 секунды
 }
 
-function showLogin() {
-    document.getElementById('app').innerHTML = `
-        <div id="login-form">
-            <h2>Авторизация</h2>
-            <input type="text" id="username" placeholder="Логин">
-            <input type="password" id="password" placeholder="Пароль">
-            <button onclick="handleLogin()">Войти</button>
-        </div>
-    `;
-}
-
-// Логика отправки сообщений
-function sendMessage() {
-    const messageInput = document.getElementById('messageInput');
-    const message = messageInput.value.trim();
+// Отправить сообщение
+async function sendMessage(username) {
+    const message = document.getElementById('messageInput').value.trim();
     if (message) {
-        const messages = document.getElementById('messages');
-        const messageElement = document.createElement('div');
-        messageElement.textContent = `Вы: ${message}`;
-        messages.appendChild(messageElement);
-        messageInput.value = '';
+        try {
+            await fetch(`${SERVER_URL}/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, message }),
+            });
+            document.getElementById('messageInput').value = ''; // Очистка поля ввода
+            loadMessages();
+        } catch (error) {
+            console.error('Ошибка отправки сообщения:', error);
+        }
+    } else {
+        alert('Сообщение не может быть пустым');
+    }
+}
+
+// Загрузить сообщения
+async function loadMessages() {
+    try {
+        const response = await fetch(`${SERVER_URL}/messages`);
+        const messages = await response.json();
+        const messagesContainer = document.getElementById('messages');
+        messagesContainer.innerHTML = '';
+
+        messages.forEach(msg => {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${msg.username}: ${msg.message}`;
+            messagesContainer.appendChild(messageElement);
+        });
+
+        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Автопрокрутка вниз
+    } catch (error) {
+        console.error('Ошибка загрузки сообщений:', error);
     }
 }
