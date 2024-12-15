@@ -110,3 +110,23 @@ function logout() {
     localStorage.removeItem('username');
     window.location.href = 'index.html';
 }
+
+// Загрузить онлайн пользователей
+async function loadOnlineUsers() {
+    try {
+        const response = await fetch(`${SERVER_URL}/online-users`);
+        const users = await response.json();
+        const userList = document.getElementById('online-user-list');
+        userList.innerHTML = ''; // Очищаем список перед добавлением
+        users.forEach(user => {
+            const userElement = document.createElement('div');
+            userElement.textContent = user; // Отображаем имя пользователя
+            userList.appendChild(userElement);
+        });
+    } catch (error) {
+        console.error('Ошибка загрузки онлайн пользователей:', error);
+    }
+}
+
+// Автоматически обновлять список онлайн пользователей каждые 5 секунд
+setInterval(loadOnlineUsers, 5000);

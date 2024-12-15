@@ -9,6 +9,10 @@
 <body>
     <div id="chat-app">
         <h1>Добро пожаловать в чат!</h1>
+        <div id="online-users" style="height: 150px; overflow-y: scroll; border: 1px solid #ccc; margin-bottom: 10px; padding: 10px;">
+            <h3>Онлайн пользователи:</h3>
+            <div id="online-user-list"></div>
+        </div>
         <div id="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; margin-bottom: 10px;"></div>
         <textarea id="messageInput" placeholder="Введите сообщение"></textarea>
         <button onclick="sendMessage()">Отправить</button>
@@ -64,6 +68,22 @@
             }
         }
 
+        async function loadOnlineUsers() {
+            try {
+                const response = await fetch(`${SERVER_URL}/online-users`);
+                const users = await response.json();
+                const userList = document.getElementById('online-user-list');
+                userList.innerHTML = ''; // Очищаем список перед добавлением новых пользователей
+                users.forEach(user => {
+                    const userElement = document.createElement('div');
+                    userElement.textContent = user; // Отображаем имя пользователя
+                    userList.appendChild(userElement);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки онлайн пользователей:', error);
+            }
+        }
+
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('username');
@@ -84,6 +104,8 @@
 
         loadMessages();
         setInterval(loadMessages, 3000);
+        loadOnlineUsers();
+        setInterval(loadOnlineUsers, 5000); // Обновляем список онлайн пользователей каждые 5 секунд
     </script>
 </body>
 </html>
