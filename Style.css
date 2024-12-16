@@ -10,9 +10,9 @@ body {
     color: #D4D4A7; /* Светло-зеленый текст */
 }
 
-#app, #chat-app {
+#chat-app {
     text-align: center;
-    background: #1C1F1B; /* Черный фон для блоков */
+    background: #1C1F1B; /* Черный фон для блока */
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -20,35 +20,56 @@ body {
     max-width: 400px;
 }
 
-#online-users, #chat-box {
-    background: #252A26; /* Хаки для окон */
-    border: 1px solid #495E4A; /* Граница хаки */
+#chat-box {
+    background: #252A26; /* Хаки для сообщений */
+    border: 1px solid #495E4A;
     border-radius: 5px;
+    height: 300px;
     margin-bottom: 10px;
+    overflow-y: scroll;
     padding: 10px;
     color: #D4D4A7;
 }
 
-input, textarea {
-    margin: 10px 0;
-    padding: 10px;
-    border: 1px solid #495E4A;
-    border-radius: 5px;
-    width: calc(100% - 20px);
-    box-sizing: border-box;
-    background: #1C1F1B;
-    color: #D4D4A7;
+#message-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 textarea {
-    height: 100px;
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #495E4A;
+    border-radius: 5px;
+    background: #1C1F1B;
+    color: #D4D4A7;
     resize: none;
+    height: 50px;
 }
 
-button {
-    margin: 10px 0;
-    padding: 10px 20px;
-    background: #3B5249; /* Темно-зеленый фон кнопки */
+#sendButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+#sendButton img {
+    width: 30px;
+    height: 30px;
+    filter: invert(1);
+    transition: transform 0.2s;
+}
+
+#sendButton img:hover {
+    transform: scale(1.1);
+}
+
+#logoutButton {
+    margin-top: 10px;
+    padding: 10px;
+    background: #3B5249;
     color: #D4D4A7;
     border: none;
     border-radius: 5px;
@@ -56,10 +77,6 @@ button {
     transition: background 0.3s;
 }
 
-button:hover {
-    background: #495E4A; /* Хаки при наведении */
-}
-
-#messageInput::placeholder {
-    color: #A8A8A8;
+#logoutButton:hover {
+    background: #495E4A;
 }
