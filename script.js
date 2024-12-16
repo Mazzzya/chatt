@@ -1,16 +1,17 @@
-const SERVER_URL = 'https://lime-orange-sassafras.glitch.me';
 let socket;
 let typingTimeout;
 
-// Подключение к WebSocket
+// Подключение WebSocket
 function connectWebSocket() {
-    socket = new WebSocket(`${SERVER_URL.replace('http', 'ws')}/ws`);
+    socket = new WebSocket('wss://lime-orange-sassafras.glitch.me/ws');
 
-    socket.onopen = () => console.log('Соединение установлено');
+    socket.onopen = () => {
+        console.log('Соединение установлено');
+        loadMessages();
+    };
 
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-
         if (data.type === 'message') {
             displayMessage(data.username, data.message);
         } else if (data.type === 'typing') {
@@ -19,59 +20,54 @@ function connectWebSocket() {
     };
 
     socket.onclose = () => {
-        console.log('Соединение закрыто, переподключение...');
+        console.log('Соединение закрыто. Переподключение...');
         setTimeout(connectWebSocket, 3000);
     };
 }
 
-// Отображение сообщения
-function displayMessage(username, message) {
-    const chatBox = document.getElementById('chat-box');
-    const msgElement = document.createElement('div');
-    msgElement.textContent = `${username}: ${message}`;
-    chatBox.appendChild(msgElement);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
 // Отправка сообщения
 function sendMessage() {
-    const message = document.getElementById('messageInput').value.trim();
-    const username = localStorage.getItem('username') || 'Гость';
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
 
     if (message) {
-        const data = { type: 'message', username, message };
+        const data = { type: 'message', username: 'Гость', message };
         socket.send(JSON.stringify(data));
-        document.getElementById('messageInput').value = '';
+        messageInput.value = '';
+        clearTypingIndicator();
     }
 }
 
 // Индикация набора сообщения
 function sendTypingStatus() {
-    const username = localStorage.getItem('username') || 'Гость';
-    socket.send(JSON.stringify({ type: 'typing', username }));
-
+    socket.send(JSON.stringify({ type: 'typing', username: 'Гость' }));
     clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-        socket.send(JSON.stringify({ type: 'typing', username: '' }));
-    }, 3000);
+    typingTimeout = setTimeout(clearTypingIndicator, 3000);
 }
 
-// Отображение статуса "набирает сообщение..."
+function clearTypingIndicator() {
+    socket.send(JSON.stringify({ type: 'typing', username: '' }));
+}
+
 function displayTypingIndicator(username) {
-    const typingIndicator = document.getElementById('typing-indicator');
-    if (username) {
-        typingIndicator.textContent = `${username} набирает сообщение...`;
-    } else {
-        typingIndicator.textContent = '';
-    }
+    const indicator = document.getElementById('typing-indicator');
+    indicator.textContent = username ? `${username} набирает сообщение...` : '';
 }
 
-// Выход из чата
+// Отображение сообщений
+function displayMessage(username, message) {
+    const chatBox = document.getElementById('chat-box');
+    const msgDiv = document.createElement('div');
+    msgDiv.textContent = `${username}: ${message}`;
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Выйти из чата
 function logout() {
-    localStorage.removeItem('username');
     socket.close();
     window.location.href = 'index.html';
 }
 
-// Подключение при загрузке страницы
+// Запуск WebSocket
 connectWebSocket();
