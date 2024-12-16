@@ -2,17 +2,17 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background: #2E3B2F; /* Темно-зеленый фон */
+    background: #2E3B2F; /* Тёмно-зелёный фон */
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    color: #D4D4A7; /* Светло-зеленый текст */
+    color: #D4D4A7;
 }
 
 #chat-app {
     text-align: center;
-    background: #1C1F1B; /* Черный фон для блока */
+    background: #1C1F1B;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -21,7 +21,7 @@ body {
 }
 
 #chat-box {
-    background: #252A26; /* Хаки для сообщений */
+    background: #252A26;
     border: 1px solid #495E4A;
     border-radius: 5px;
     height: 300px;
@@ -29,6 +29,14 @@ body {
     overflow-y: scroll;
     padding: 10px;
     color: #D4D4A7;
+}
+
+#typing-indicator {
+    color: #A8A8A8;
+    height: 20px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    text-align: left;
 }
 
 #message-controls {

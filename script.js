@@ -1,132 +1,77 @@
 const SERVER_URL = 'https://lime-orange-sassafras.glitch.me';
+let socket;
+let typingTimeout;
 
-// Регистрация пользователя
-async function register() {
-    const username = document.getElementById('regUsername').value.trim();
-    const password = document.getElementById('regPassword').value.trim();
+// Подключение к WebSocket
+function connectWebSocket() {
+    socket = new WebSocket(`${SERVER_URL.replace('http', 'ws')}/ws`);
 
-    if (username && password) {
-        try {
-            const response = await fetch(`${SERVER_URL}/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
-            const result = await response.json();
-            if (result.success) {
-                alert('Регистрация успешна!');
-                showLogin();
-            } else {
-                alert(result.error || 'Ошибка регистрации');
-            }
-        } catch (error) {
-            console.error('Ошибка регистрации:', error);
+    socket.onopen = () => console.log('Соединение установлено');
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'message') {
+            displayMessage(data.username, data.message);
+        } else if (data.type === 'typing') {
+            displayTypingIndicator(data.username);
         }
-    } else {
-        alert('Введите логин и пароль!');
-    }
+    };
+
+    socket.onclose = () => {
+        console.log('Соединение закрыто, переподключение...');
+        setTimeout(connectWebSocket, 3000);
+    };
 }
 
-// Показать форму авторизации
-function showLogin() {
-    document.getElementById('register-form').style.display = 'none';
-    document.getElementById('login-form').style.display = 'block';
+// Отображение сообщения
+function displayMessage(username, message) {
+    const chatBox = document.getElementById('chat-box');
+    const msgElement = document.createElement('div');
+    msgElement.textContent = `${username}: ${message}`;
+    chatBox.appendChild(msgElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Авторизация пользователя
-async function login() {
-    const username = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-
-    if (username && password) {
-        try {
-            const response = await fetch(`${SERVER_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
-            const result = await response.json();
-            if (result.success) {
-                localStorage.setItem('token', result.token);
-                localStorage.setItem('username', username);
-                window.location.href = 'chat.html'; // Переход в чат
-            } else {
-                alert(result.error || 'Ошибка авторизации');
-            }
-        } catch (error) {
-            console.error('Ошибка авторизации:', error);
-        }
-    } else {
-        alert('Введите логин и пароль!');
-    }
-}
-
-// Загрузить сообщения
-async function loadMessages() {
-    try {
-        const response = await fetch(`${SERVER_URL}/messages`);
-        const messages = await response.json();
-        const chatBox = document.getElementById('chat-box');
-        chatBox.innerHTML = '';
-        messages.forEach(msg => {
-            const msgElement = document.createElement('div');
-            msgElement.textContent = `${msg.username}: ${msg.message}`;
-            chatBox.appendChild(msgElement);
-        });
-    } catch (error) {
-        console.error('Ошибка загрузки сообщений:', error);
-    }
-}
-
-// Отправить сообщение
-async function sendMessage() {
+// Отправка сообщения
+function sendMessage() {
     const message = document.getElementById('messageInput').value.trim();
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
+    const username = localStorage.getItem('username') || 'Гость';
 
-    if (message && token) {
-        try {
-            await fetch(`${SERVER_URL}/send`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token,
-                },
-                body: JSON.stringify({ username, message }),
-            });
-            document.getElementById('messageInput').value = '';
-            loadMessages();
-        } catch (error) {
-            console.error('Ошибка отправки сообщения:', error);
-        }
-    } else {
-        alert('Сообщение не может быть пустым или вы не авторизованы');
+    if (message) {
+        const data = { type: 'message', username, message };
+        socket.send(JSON.stringify(data));
+        document.getElementById('messageInput').value = '';
     }
 }
 
-// Выйти из чата
+// Индикация набора сообщения
+function sendTypingStatus() {
+    const username = localStorage.getItem('username') || 'Гость';
+    socket.send(JSON.stringify({ type: 'typing', username }));
+
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        socket.send(JSON.stringify({ type: 'typing', username: '' }));
+    }, 3000);
+}
+
+// Отображение статуса "набирает сообщение..."
+function displayTypingIndicator(username) {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (username) {
+        typingIndicator.textContent = `${username} набирает сообщение...`;
+    } else {
+        typingIndicator.textContent = '';
+    }
+}
+
+// Выход из чата
 function logout() {
-    localStorage.removeItem('token');
     localStorage.removeItem('username');
+    socket.close();
     window.location.href = 'index.html';
 }
 
-// Загрузить онлайн пользователей
-async function loadOnlineUsers() {
-    try {
-        const response = await fetch(`${SERVER_URL}/online-users`);
-        const users = await response.json();
-        const userList = document.getElementById('online-user-list');
-        userList.innerHTML = ''; // Очищаем список перед добавлением
-        users.forEach(user => {
-            const userElement = document.createElement('div');
-            userElement.textContent = user; // Отображаем имя пользователя
-            userList.appendChild(userElement);
-        });
-    } catch (error) {
-        console.error('Ошибка загрузки онлайн пользователей:', error);
-    }
-}
-
-// Автоматически обновлять список онлайн пользователей каждые 5 секунд
-setInterval(loadOnlineUsers, 5000);
+// Подключение при загрузке страницы
+connectWebSocket();

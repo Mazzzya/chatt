@@ -9,103 +9,24 @@
 <body>
     <div id="chat-app">
         <h1>Добро пожаловать в чат!</h1>
-        <div id="online-users" style="height: 150px; overflow-y: scroll; border: 1px solid #ccc; margin-bottom: 10px; padding: 10px;">
-            <h3>Онлайн пользователи:</h3>
-            <div id="online-user-list"></div>
+        
+        <!-- Блок сообщений -->
+        <div id="chat-box"></div>
+
+        <!-- Индикация набора сообщения -->
+        <div id="typing-indicator"></div>
+
+        <!-- Поле ввода сообщения и кнопка отправки -->
+        <div id="message-controls">
+            <textarea id="messageInput" placeholder="Введите сообщение" oninput="sendTypingStatus()"></textarea>
+            <button id="sendButton" onclick="sendMessage()">
+                <img src="send-icon.png" alt="Отправить">
+            </button>
         </div>
-        <div id="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; margin-bottom: 10px;"></div>
-        <textarea id="messageInput" placeholder="Введите сообщение"></textarea>
-        <button onclick="sendMessage()">Отправить</button>
-        <button onclick="logout()">Выйти</button>
+
+        <!-- Кнопка выхода -->
+        <button id="logoutButton" onclick="logout()">Выйти</button>
     </div>
-
-    <script>
-        const SERVER_URL = 'https://lime-orange-sassafras.glitch.me';
-        const token = localStorage.getItem('token');
-        const username = localStorage.getItem('username');
-
-        if (!token || !username) {
-            alert('Вы не авторизованы!');
-            window.location.href = 'index.html';
-        }
-
-        async function sendMessage() {
-            const message = document.getElementById('messageInput').value.trim();
-            if (message) {
-                try {
-                    await fetch(`${SERVER_URL}/send`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': token,
-                        },
-                        body: JSON.stringify({ username, message })
-                    });
-                    document.getElementById('messageInput').value = '';
-                    loadMessages();
-                } catch (error) {
-                    console.error('Ошибка отправки сообщения:', error);
-                }
-            } else {
-                alert('Сообщение не может быть пустым');
-            }
-        }
-
-        async function loadMessages() {
-            try {
-                const response = await fetch(`${SERVER_URL}/messages`);
-                const messages = await response.json();
-                const chatBox = document.getElementById('chat-box');
-                chatBox.innerHTML = '';
-                messages.forEach(msg => {
-                    const msgElement = document.createElement('div');
-                    msgElement.textContent = `${msg.username}: ${msg.message}`;
-                    chatBox.appendChild(msgElement);
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch (error) {
-                console.error('Ошибка загрузки сообщений:', error);
-            }
-        }
-
-        async function loadOnlineUsers() {
-            try {
-                const response = await fetch(`${SERVER_URL}/online-users`);
-                const users = await response.json();
-                const userList = document.getElementById('online-user-list');
-                userList.innerHTML = ''; // Очищаем список перед добавлением новых пользователей
-                users.forEach(user => {
-                    const userElement = document.createElement('div');
-                    userElement.textContent = user; // Отображаем имя пользователя
-                    userList.appendChild(userElement);
-                });
-            } catch (error) {
-                console.error('Ошибка загрузки онлайн пользователей:', error);
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('username');
-            window.location.href = 'index.html';
-        }
-
-        document.addEventListener('keydown', (event) => {
-            const input = document.getElementById('messageInput');
-            if (event.target === input) {
-                if (event.key === 'Enter' && !event.altKey) {
-                    event.preventDefault();
-                    sendMessage();
-                } else if (event.key === 'Enter' && event.altKey) {
-                    input.value += '\n';
-                }
-            }
-        });
-
-        loadMessages();
-        setInterval(loadMessages, 3000);
-        loadOnlineUsers();
-        setInterval(loadOnlineUsers, 5000); // Обновляем список онлайн пользователей каждые 5 секунд
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
