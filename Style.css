@@ -2,78 +2,45 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    background-color: #2E3B2F;
-    background-image: 
-        linear-gradient(135deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%),
-        linear-gradient(225deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%),
-        linear-gradient(45deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%),
-        linear-gradient(315deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%);
+    background-color: #d3d3d3;
+    background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%),
+                      linear-gradient(225deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%),
+                      linear-gradient(45deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%),
+                      linear-gradient(315deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%);
     background-size: 50px 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    color: #D4D4A7;
 }
 
-#chat-app {
-    background: #1C1F1B;
-    padding: 20px;
+.auth-dog {
+    width: 100px;
+    height: auto;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    animation: run 5s infinite linear;
+}
+
+@keyframes run {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100px); }
+}
+
+.chat-message {
+    background: rgba(75, 80, 70, 0.8);
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    width: 400px;
-    text-align: center;
+    margin: 5px 0;
+    padding: 5px 10px;
 }
 
-#chat-box {
-    height: 300px;
-    background: #252A26;
-    border: 1px solid #495E4A;
-    border-radius: 5px;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    padding: 10px;
+.chat-user {
+    font-weight: bold;
+}
+
+.chat-time {
+    font-size: 0.75em;
+    color: #aaa;
 }
 
 #typing-indicator {
-    color: #A8A8A8;
-    font-size: 0.9rem;
     height: 20px;
-}
-
-textarea {
-    width: calc(100% - 50px);
-    height: 50px;
-    background: #1C1F1B;
-    border: 1px solid #495E4A;
-    border-radius: 5px;
-    color: #D4D4A7;
-    resize: none;
-}
-
-#sendButton {
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-#sendButton img {
-    width: 30px;
-    height: 30px;
-    filter: invert(1);
-}
-
-button {
-    margin-top: 10px;
-    background: #3B5249;
-    border: none;
-    padding: 10px;
-    color: #D4D4A7;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-button:hover {
-    background: #495E4A;
+    color: #555;
 }
